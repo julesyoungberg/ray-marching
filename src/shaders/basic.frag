@@ -17,12 +17,17 @@ float distFromSphere(in vec3 point, in vec3 center, float radius) {
 	return length(point - center) - radius;
 }
 
+float distFromFloor(in vec3 point) {
+    return point.y + 200.0;
+}
+
 float distFromNearest(in vec3 p) {
     float t = sin(time * 0.5) * 2.0;
     float displacement = sin(6.0 * p.x * mousePosition.x) * sin(8.0 * p.y * mousePosition.y) * sin(5.0 * p.z * t + time * 0.5) * 0.25;
-    float sphere1 = distFromSphere(p, vec3(0), 1.0);
+    float sphere1 = distFromSphere(p, vec3(0), 1.0) + displacement;
 
-    return sphere1 + displacement;
+    // return min(distFromFloor(p), sphere1);
+    return sphere1;
 }
 
 vec3 calculateNormal(in vec3 point) {
@@ -35,7 +40,11 @@ vec3 calculateNormal(in vec3 point) {
     return normalize(vec3(x, y, z));
 }
 
-vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
+vec3 floorColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
+    return vec3(0.8);
+}
+
+vec3 sphereColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightPosition = vec3(-2.0, -5.0, 3.0);
     vec3 lightDir = normalize(position - lightPosition);
 
@@ -50,6 +59,14 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 specularColor = vec3(0.8) * specular;
 
     return diffuseColor + specularColor;
+}
+
+vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
+    if (distFromFloor(position) < MINIMUM_HIT_DISTANCE) {
+        return floorColor(position, normal, eyePos);
+    }
+
+    return sphereColor(position, normal, eyePos);
 }
 
 vec3 rayMarch(in vec3 ro, in vec3 rd) {
