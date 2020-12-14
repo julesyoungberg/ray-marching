@@ -13,25 +13,15 @@ uniform float time;
 @import ./util/castRay;
 
 float distFromBoxes(in vec3 p) {
-    const int d = 10;
-
     const float size = 0.5;
-    const float stp = size * 4.0; 
+    const float d = size * 2.0;
     const vec3 dims = vec3(size);
     float minimum = sdBoxDist(p - dims, dims);
 
-    for (int x = 0; x < d; x++) {
-        for (int z = 0; z < d; z++) {
-            if (x == 0 && z == 0) {
-                continue;
-            }
+    vec3 pos = p - dims;
+    pos = vec3(mod(pos.x + d, d * 2.0) - d, pos.y, mod(pos.z + d, d * 2.0) - d);
 
-            vec3 offset = vec3(stp * float(x), 0, stp * float(z)) + dims;
-            minimum = min(minimum, sdBoxDist(p - offset, dims));
-        }
-    }
-
-    return minimum;
+    return sdBoxDist(pos, dims);
 }
 
 float distFromNearest(in vec3 p) {
@@ -68,7 +58,7 @@ float getShadowMultiplier(in vec3 position, in vec3 lightPos) {
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    vec3 lightPos = vec3(7.0, 17.0, 7.0);
+    vec3 lightPos = vec3(10.0, 40.0, 10.0);
     vec3 lightDir = normalize(lightPos - position);
 
     float diffuse = max(0.0, dot(normal, lightDir));
@@ -86,7 +76,9 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
 }
 
 void main() {
-    const vec3 camPos = vec3(15.0, 7.0, 12.0);
+    float x = (cos(time * 0.7) * 0.5 + 0.5) * 30.0 + 5.0;
+    float z = (sin(time * 0.7) * 0.5 + 0.5) * 20.0 + 4.0;
+    vec3 camPos = vec3(x, 10, z);
     const vec3 lookAt = vec3(0);
     const float zoom = 1.0;
 
