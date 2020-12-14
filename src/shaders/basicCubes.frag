@@ -13,8 +13,7 @@ uniform float time;
 @import ./util/castRay;
 
 float distFromBoxes(in vec3 p) {
-    const int numBoxes = 49;
-    const int d = int(sqrt(float(numBoxes)));
+    const int d = 10;
 
     const float size = 0.5;
     const float stp = size * 4.0; 
@@ -42,13 +41,35 @@ float distFromNearest(in vec3 p) {
 @import ./util/calculateNormal;
 @import ./util/rayMarch;
 
-vec3 floorColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    return vec3(0.8);
+float getShadowMultiplier(in vec3 position, in vec3 lightPos) {
+    vec3 lightRay = lightPos - position;
+    vec3 lightDir = normalize(lightRay);
+    float maxLength = length(lightDir);
+
+    float finalDist = 1000.0;
+    vec3 rayPos = position;
+    float totalDist = 0.1;
+    rayPos += totalDist * lightDir;
+    float res = 1.0;
+    const float shadowConst = 30.0;
+
+    for (int i = 0; i < NUM_STEPS && totalDist < maxLength; i++) {
+        if (finalDist < MIN_HIT_DISTANCE) {
+            return 0.3;
+        }
+
+        finalDist = distFromNearest(rayPos);
+        totalDist += finalDist;
+        res = min(res, shadowConst * finalDist / totalDist);
+        rayPos += finalDist * lightDir;
+    }
+
+    return res;
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    const vec3 lightPosition = vec3(4.0, 5.0, 3.0);
-    vec3 lightDir = normalize(lightPosition - position);
+    vec3 lightPos = vec3(7.0, 17.0, 7.0);
+    vec3 lightDir = normalize(lightPos - position);
 
     float diffuse = max(0.0, dot(normal, lightDir));
     vec3 diffuseColor = vec3(0.5) * diffuse;
@@ -58,13 +79,14 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 eyeDir = normalize(eyePos - position);
     vec3 reflected = reflect(-lightDir, normal);
     float specular = pow(max(dot(eyeDir, reflected), 0.0), shininess) * specularStrength;
-    vec3 specularColor = vec3(0.8) * specular;
+    vec3 specularColor = vec3(0.7) * specular;
 
-    return vec3(0.2) * 0.5 + diffuseColor + specularColor;
+    vec3 color = vec3(0.2) * 0.5 + diffuseColor + specularColor;
+    return color * getShadowMultiplier(position, lightPos);
 }
 
 void main() {
-    const vec3 camPos = vec3(10.0, 7.0, 10.0);
+    const vec3 camPos = vec3(15.0, 7.0, 12.0);
     const vec3 lookAt = vec3(0);
     const float zoom = 1.0;
 

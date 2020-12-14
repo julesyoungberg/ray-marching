@@ -51,7 +51,7 @@ vec3 sphereColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    // if (mFloorDist(position) < MINIMUM_HIT_DISTANCE) {
+    // if (mFloorDist(position) < MIN_HIT_DISTANCE) {
     //     return floorColor(position, normal, eyePos);
     // }
 
