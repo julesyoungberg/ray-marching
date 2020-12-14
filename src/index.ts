@@ -21,7 +21,7 @@ const programs = {
 };
 
 const state = {
-    currentProgram: 'division',
+    currentProgram: 'basicCubes',
 };
 
 const gui = new dat.GUI();
