@@ -4,7 +4,7 @@
  * - vec3 calculateNormal(vec3 p)
  * - vec3 calculateColor(vec3 p, vec3 n, vec3 eye)
  */
-vec3 rayMarch(in vec3 ro, in vec3 rd, in vec3 bg) {
+float rayMarch(in vec3 ro, in vec3 rd) {
     float totalDistancetraveled = 0.0;
     
     for (int i = 0; i < NUM_STEPS; i++) {
@@ -12,8 +12,7 @@ vec3 rayMarch(in vec3 ro, in vec3 rd, in vec3 bg) {
         float dist = distFromNearest(currentPosition);
 
         if (dist < MINIMUM_HIT_DISTANCE) {
-            vec3 normal = calculateNormal(currentPosition);
-            return calculateColor(currentPosition, normal, ro);
+            return totalDistancetraveled;
         }
 
         if (totalDistancetraveled > MAXIMUM_TRACE_DISTANCE) {
@@ -23,5 +22,5 @@ vec3 rayMarch(in vec3 ro, in vec3 rd, in vec3 bg) {
         totalDistancetraveled += dist;
     }
 
-    return bg;
+    return -1.0;
 }

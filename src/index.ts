@@ -6,13 +6,13 @@ import createContext from './util/createContext';
 import createUnitQuad2D from './util/createUnitQuad2D';
 
 const basicVertShader = require('./shaders/basic.vert');
-const basicFragShader = require('./shaders/basic.frag');
+const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
 
 const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
 const programs = {
-    basic: twgl.createProgramInfo(gl, [basicVertShader, basicFragShader]),
+    pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
 };
 
