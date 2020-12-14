@@ -9,6 +9,7 @@ const float FRAME_OF_VIEW = 1.0;
 in vec2 uv;
 out vec4 fragColor;
 
+uniform vec2 mousePosition;
 uniform vec2 resolution;
 uniform float time;
 
@@ -18,7 +19,7 @@ float distFromSphere(in vec3 point, in vec3 center, float radius) {
 
 float distFromNearest(in vec3 p) {
     float t = sin(time * 0.5) * 2.0;
-    float displacement = sin(3.0 * p.x * t) * sin(4.0 * p.y * t) * sin(5.0 * p.z * t) * 0.25;
+    float displacement = sin(6.0 * p.x * mousePosition.x) * sin(8.0 * p.y * mousePosition.y) * sin(5.0 * p.z * t + time * 0.5) * 0.25;
     float sphere1 = distFromSphere(p, vec3(0), 1.0);
 
     return sphere1 + displacement;
