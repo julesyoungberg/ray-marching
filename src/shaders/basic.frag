@@ -34,8 +34,24 @@ vec3 calculateNormal(in vec3 point) {
     return normalize(vec3(x, y, z));
 }
 
-vec3 rayMarch(in vec3 ro, in vec3 rd) {
+vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightPosition = vec3(-2.0, -5.0, 3.0);
+    vec3 lightDir = normalize(position - lightPosition);
+
+    float diffuse = max(0.0, dot(normal, lightDir));
+    vec3 diffuseColor = vec3(0.25) * diffuse;
+
+    float specularStrength = 0.5;
+    float shininess = 64.0;
+    vec3 eyeDir = normalize(eyePos - position);
+    vec3 reflected = reflect(-lightDir, normal);
+    float specular = pow(max(dot(eyeDir, reflected), 0.0), shininess) * specularStrength;
+    vec3 specularColor = vec3(0.8) * specular;
+
+    return diffuseColor + specularColor;
+}
+
+vec3 rayMarch(in vec3 ro, in vec3 rd) {
     float totalDistancetraveled = 0.0;
     
     for (int i = 0; i < NUM_STEPS; i++) {
@@ -44,9 +60,7 @@ vec3 rayMarch(in vec3 ro, in vec3 rd) {
 
         if (dist < MINIMUM_HIT_DISTANCE) {
             vec3 normal = calculateNormal(currentPosition);
-            vec3 lightDir = normalize(currentPosition - lightPosition);
-            float diffuse = max(0.0, dot(normal, lightDir));
-            return vec3(1.0, 0.0, 0.0) * diffuse;
+            return calculateColor(currentPosition, normal, ro);
         }
 
         if (totalDistancetraveled > MAXIMUM_TRACE_DISTANCE) {
