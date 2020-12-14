@@ -19,8 +19,7 @@ float distFromNearest(in vec3 p) {
     float displacement = sin(6.0 * p.x * mousePosition.x) * sin(8.0 * p.y * mousePosition.y) * sin(5.0 * p.z * t + time * 0.5) * 0.25;
     float sphere1 = distFromSphere(p, vec3(0), 1.0) + displacement;
 
-    // return min(distFromFloor(p), sphere1);
-    return sphere1;
+    return min(mDistFromFloor(p), sphere1);
 }
 
 @import ./util/calculateNormal;
@@ -34,7 +33,7 @@ vec3 sphereColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightDir = normalize(position - lightPosition);
 
     float diffuse = max(0.0, dot(normal, lightDir));
-    vec3 diffuseColor = vec3(0.25) * diffuse;
+    vec3 diffuseColor = vec3(0.5) * diffuse;
 
     float specularStrength = 0.5;
     float shininess = 64.0;
@@ -43,13 +42,13 @@ vec3 sphereColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     float specular = pow(max(dot(eyeDir, reflected), 0.0), shininess) * specularStrength;
     vec3 specularColor = vec3(0.8) * specular;
 
-    return diffuseColor + specularColor;
+    return normal * 0.5 + 0.5;
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    // if (mDistFromFloor(position) < MINIMUM_HIT_DISTANCE) {
-    //     return floorColor(position, normal, eyePos);
-    // }
+    if (mDistFromFloor(position) < MINIMUM_HIT_DISTANCE) {
+        return floorColor(position, normal, eyePos);
+    }
 
     return sphereColor(position, normal, eyePos);
 }

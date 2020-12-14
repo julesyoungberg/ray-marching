@@ -1,3 +1,4 @@
+import * as dat from 'dat.gui';
 import * as twgl from 'twgl.js';
 
 import Pointers from './Pointers';
@@ -6,10 +7,21 @@ import createUnitQuad2D from './util/createUnitQuad2D';
 
 const basicVertShader = require('./shaders/basic.vert');
 const basicFragShader = require('./shaders/basic.frag');
+const basicCubesShader = require('./shaders/basicCubes.frag');
 
 const gl: WebGLRenderingContext = createContext();
-const programInfo = twgl.createProgramInfo(gl, [basicVertShader, basicFragShader]);
 const bufferInfo = createUnitQuad2D(gl);
+const programs = {
+    basic: twgl.createProgramInfo(gl, [basicVertShader, basicFragShader]),
+    basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
+};
+
+const state = {
+    currentProgram: 'basicCubes',
+};
+
+const gui = new dat.GUI();
+gui.add(state, 'currentProgram', Object.keys(programs));
 
 const pointers = new Pointers(gl.canvas as HTMLCanvasElement);
 
@@ -25,6 +37,7 @@ function render(time: number) {
         time: time * 0.001,
     };
 
+    const programInfo = programs[state.currentProgram];
     gl.useProgram(programInfo.program);
     twgl.setBuffersAndAttributes(gl, programInfo, bufferInfo);
     twgl.setUniforms(programInfo, uniforms);
