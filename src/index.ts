@@ -19,7 +19,7 @@ const programs = {
 };
 
 const state = {
-    currentProgram: 'optical',
+    currentProgram: 'basicCubes',
 };
 
 const gui = new dat.GUI();
