@@ -1,9 +1,10 @@
 import * as twgl from 'twgl.js';
+import createContext from './util/createContext';
 
 const basicVertShader = require('./shaders/basic.vert');
 const basicFragShader = require('./shaders/basic.frag');
 
-const gl: WebGLRenderingContext = (document.getElementById('canvas') as any).getContext('webgl2');
+const gl: WebGLRenderingContext = createContext();
 const programInfo = twgl.createProgramInfo(gl, [basicVertShader, basicFragShader]);
 
 const arrays = {
