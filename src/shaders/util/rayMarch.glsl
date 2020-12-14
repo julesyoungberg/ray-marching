@@ -1,3 +1,9 @@
+/**
+ * Dependencies:
+ * - float distFromNearest(float a)
+ * - vec3 calculateNormal(vec3 p)
+ * - vec3 calculateColor(vec3 p, vec3 n, vec3 eye)
+ */
 vec3 rayMarch(in vec3 ro, in vec3 rd, in vec3 bg) {
     float totalDistancetraveled = 0.0;
     

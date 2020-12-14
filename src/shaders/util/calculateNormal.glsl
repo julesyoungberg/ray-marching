@@ -1,3 +1,7 @@
+/**
+ * Dependencies:
+ * - distFromNearest(a: float): float
+ */
 vec3 calculateNormal(in vec3 point) {
     const vec3 stp = vec3(0.001, 0, 0);
 
