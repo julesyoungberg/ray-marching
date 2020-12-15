@@ -1,7 +1,3 @@
-/**
- * Dependencies:
- * - float distFromNearest(vec3 p)
- */
 float distFromNearest(in vec3 p);
 
 float getShadowMultiplier(in vec3 position, in vec3 lightPos, in float shadowConst, in float b) {

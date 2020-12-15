@@ -1,7 +1,3 @@
-/**
- * Dependencies:
- * - float distFromNearest(vec3 p)
- */
 float distFromNearest(in vec3 p);
 
 float rayMarch(in vec3 ro, in vec3 rd, in float maxDist) {

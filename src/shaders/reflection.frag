@@ -12,6 +12,7 @@ uniform float time;
 @import ./util/config;
 @import ./util/rand;
 @import ./util/calculateNormal;
+@import ./util/calculateShading;
 @import ./util/castRay;
 @import ./util/getShadowMultiplier;
 @import ./util/getSurfaceColor;
@@ -39,15 +40,23 @@ vec3 getWallColor(in vec3 position) {
     return mix(vec3(0.4), vec3(0.9), float(isEven));
 }
 
-// vec3 calculateReflection(in vec3 position, in vec3 normal) {
-//     vec3 rayStart = position + normal * 0.01;
-//     float dist = rayMarch(rayStart, normal);
+vec3 calculateReflection(in vec3 position, in vec3 normal, in vec3 lightPos) {
+    vec3 rayStart = position + normal * 0.02;
 
-// }
+    float dist = rayMarch(rayStart, normal);
+    if (dist < 0.0) {
+        return vec3(-1.0);
+    }
+
+    vec3 surfacePos = rayStart + normal * dist;
+    vec3 surfaceNormal = calculateNormal(surfacePos);
+    vec3 color = getWallColor(position);
+    vec3 finalColor = calculateShading(surfacePos, surfaceNormal, position, lightPos, color);
+    return finalColor;
+}
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightPos = eyePos + vec3(0.0, 10.0, 15.0);
-    vec3 lightDir = normalize(lightPos - position);
     bool isWall = distFromWalls(position) < MIN_HIT_DISTANCE;
 
     vec3 color;
@@ -60,23 +69,15 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
         specColor = vec3(0.9);
     }
 
-    float diffuse = max(0.0, dot(normal, lightDir));
-    vec3 diffuseColor = color * diffuse;
+    vec3 finalColor = calculateShading(position, normal, eyePos, lightPos, color, specColor);
 
-    const float specularStrength = 0.5;
-    const float shininess = 64.0;
-    vec3 eyeDir = normalize(eyePos - position);
-    vec3 reflected = reflect(-lightDir, normal);
-    float specular = pow(max(dot(eyeDir, reflected), 0.0), shininess) * specularStrength;
-    vec3 specularColor = specColor * specular;
-
-    vec3 finalColor = vec3(0.2) * 0.5 + diffuseColor + specularColor;
-    finalColor *= getShadowMultiplier(position, lightPos, 30.0, 0.3);
-
-    // if (!isWall) {
-    //     vec3 reflection = calculateReflection(position, normal);
-    //     // blend reflection with final color
-    // }
+    if (!isWall) {
+        vec3 reflection = calculateReflection(position, normal, lightPos);
+        if (!all(equal(reflection, vec3(-1.0)))) {
+            float reflectiveness = 0.2;
+            finalColor = finalColor * (1.0 - reflectiveness) + reflection * reflectiveness;
+        }
+    }
 
     return finalColor;
 }
