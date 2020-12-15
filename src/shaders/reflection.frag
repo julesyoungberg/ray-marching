@@ -20,14 +20,17 @@ uniform float time;
 @import ./util/getSurfaceColor;
 @import ./util/rayMarch;
 
-const float sphereRadius = 3.0;
-const vec3 spherePos = vec3(10.0, sphereRadius, 10.0);
-const vec3 boxPos = vec3(18.0, sphereRadius / 3.0, 10.0);
-
 const float REFLECTIVITY = 1.0;
 const float TRANSMITTANCE = 0.0;
+const int MAX_RAY_BOUNCES = 10;
+const vec3 OBJECT_ABSORB = vec3(8.0, 8.0, 3.0); // for beers law
 const float REFRACTIVE_INDEX_OUTSIDE = 1.00029;
 const float REFRACTIVE_INDEX_INSIDE = 1.125;
+
+const float sphereRadius = 3.0;
+const vec3 spherePos = vec3(10.0, sphereRadius, 10.0);
+const vec3 sphereColor = vec3(1, 1, 1);
+const vec3 boxPos = vec3(17.0, sphereRadius / 3.0, 10.0);
 
 float distFromWalls(in vec3 p) {
     float s = 40.0;
@@ -82,67 +85,88 @@ vec3 calculateReflection(in vec3 position, in vec3 normal, in vec3 eyePos, in ve
 
     float dist = rayMarch(rayStart, reflected);
     if (dist < 0.0) {
-        return vec3(-1.0);
+        return vec3(0);
     }
 
     vec3 surfacePos = rayStart + reflected * dist;
     vec3 surfaceNormal = calculateNormal(surfacePos);
     vec3 color = calculateColorWithoutReflections(surfacePos, surfaceNormal, eyePos, lightPos);
-    vec3 finalColor = calculateShading(surfacePos, surfaceNormal, position, lightPos, color);
-    float multiplier = getReflectionAmount(REFRACTIVE_INDEX_OUTSIDE, REFRACTIVE_INDEX_INSIDE, normal, incident, REFLECTIVITY);
-    return finalColor * multiplier;
+    return color;
 }
 
-vec3 calculateTransmitted(in vec3 position, in vec3 eyePos, in vec3 lightPos) {
+// bounce around inside the object reflecting and transmitting / refracting the ray
+// https://blog.demofox.org/2017/01/09/raytracing-reflection-refraction-fresnel-total-internal-reflection-and-beers-law/
+// https://www.shadertoy.com/view/4tyXDR
+vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 lightPos) {
+    float multiplier = 1.0;
+    vec3 result = vec3(0.0);
+    float absorbDistance = 0.0;
+
+    vec3 rayPos = position;
     vec3 rayDir = normalize(position - eyePos);
-    vec3 rayStart = position + rayDir * 0.02;
+    rayDir = refract(rayDir, normal, REFRACTIVE_INDEX_OUTSIDE / REFRACTIVE_INDEX_INSIDE);
 
-    float dist = 0.0;
-    for (int i = 0; i < NUM_STEPS; i++) {
-        vec3 currentPosition = rayStart + rayDir * dist;
-        float currentDist = distFromNearest(currentPosition);
-
-        if (dist > MAX_TRACE_DISTANCE) {
-            break;
+    for (int i = 0; i < MAX_RAY_BOUNCES; i++) {
+        float dist = rayMarch(rayPos, rayDir);
+        if (dist < 0.0) {
+            return result;
         }
 
-        if (dist < MIN_HIT_DISTANCE) {
-            if (sphere1(currentPosition) != currentDist) {
-                break;
-            }
+        vec3 prevPos = rayPos;
+        rayPos += rayDir * dist;
+        vec3 currentNormal = calculateNormal(rayPos);
+
+        // calculate beer's law absorption.
+        absorbDistance += dist;
+        vec3 absorb = exp(-OBJECT_ABSORB * absorbDistance);
+
+        // calculate how much to reflect or transmit (refract or diffuse)
+        float reflectAmount = getReflectionAmount(REFRACTIVE_INDEX_INSIDE, REFRACTIVE_INDEX_OUTSIDE, rayDir, currentNormal, REFLECTIVITY);
+        float refractAmount = 1.0 - reflectAmount;
+
+        // refract the internal ray and raymarch to find the outside color
+        vec3 refractDir = refract(rayDir, currentNormal, REFRACTIVE_INDEX_INSIDE / REFRACTIVE_INDEX_OUTSIDE);
+        vec3 refractOrg = rayPos + refractDir * 0.02;
+        float refractDist = rayMarch(refractOrg, refractDir);
+        vec3 refractColor = vec3(0);
+        if (refractDist >= 0.0) {
+            vec3 surfacePos = refractOrg + refractDist * refractDir;
+            vec3 surfaceNormal = calculateNormal(surfacePos);
+            refractColor = calculateColorWithoutReflections(surfacePos, surfaceNormal, refractOrg, lightPos);
         }
+        result += refractColor * refractAmount * multiplier * absorb;
+
+        // add specular highlight based on refracted ray direction
+        result += calculateShading(rayPos, refractDir, prevPos, lightPos, vec3(0)) * refractAmount * multiplier * absorb;
+
+        // follow the ray down the internal reflection path.
+        rayDir = reflect(rayDir, currentNormal);
+        rayPos += rayDir * 0.02;
+
+        multiplier *= reflectAmount;
     }
 
-    if (dist == 0.0) {
-        return vec3(-1.0);
-    }
-
-    vec3 surfacePos = rayStart + rayDir * dist;
-    vec3 surfaceNormal = calculateNormal(surfacePos);
-    vec3 color = calculateColorWithoutReflections(surfacePos, surfaceNormal, eyePos, lightPos);
-    vec3 finalColor = calculateShading(surfacePos, surfaceNormal, position, lightPos, color);
-    return finalColor;
+    return result;
 }
 
 vec3 calculateSphereColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 lightPos, in vec3 color) {
     vec3 finalColor = color;
     float weightSum = 0.0;
     vec3 contribution = vec3(0.0);
+    vec3 incident = normalize(position - eyePos);
+    float reflectAmount = getReflectionAmount(REFRACTIVE_INDEX_OUTSIDE, REFRACTIVE_INDEX_INSIDE, normal, incident, REFLECTIVITY);
+    float refractAmount = 1.0 - reflectAmount;
 
     if (REFLECTIVITY > 0.0) {
-        vec3 reflection = calculateReflection(position, normal, eyePos, lightPos);
-        if (!all(equal(reflection, vec3(-1.0)))) {
-            weightSum += REFLECTIVITY;
-            contribution += reflection * REFLECTIVITY;
-        }
+        vec3 reflection = calculateReflection(position, normal, eyePos, lightPos) * reflectAmount;
+        weightSum += REFLECTIVITY;
+        contribution += reflection * REFLECTIVITY;
     }
 
     if (TRANSMITTANCE > 0.0) {
-        vec3 transmitted = calculateTransmitted(position, eyePos, lightPos);
-        if (!all(equal(transmitted, vec3(-1.0)))) {
-            weightSum += TRANSMITTANCE;
-            contribution += transmitted * TRANSMITTANCE;
-        }
+        vec3 transmitted = calculateTransmitted(position, normal, eyePos, lightPos) * refractAmount;
+        weightSum += TRANSMITTANCE;
+        contribution += transmitted * TRANSMITTANCE;
     }
 
     finalColor = finalColor * (1.0 - weightSum) + contribution;
@@ -151,7 +175,7 @@ vec3 calculateSphereColor(in vec3 position, in vec3 normal, in vec3 eyePos, in v
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    vec3 lightPos = eyePos + vec3(0.0, 10.0, 15.0);
+    vec3 lightPos = vec3(20.0, 25.0, 20.0);
     bool isSphere = sphere1(position) < MIN_HIT_DISTANCE;
 
     vec3 finalColor = calculateColorWithoutReflections(position, normal, eyePos, lightPos);
@@ -171,17 +195,6 @@ void main() {
     float opacity = 1.0;
 
     vec3 rayDir = castRay(uv, camPos, lookAt, zoom);
-    // color = getSurfaceColor(camPos, rayDir, vec3(0));
-    float dist = rayMarch(camPos, rayDir);
-    if (dist < 0.0) {
-        color = vec3(0);
-    } else {
-        vec3 surfacePos = camPos + rayDir * dist;
-        vec3 normal = calculateNormal(surfacePos);
-        color = calculateColor(surfacePos, normal, camPos);
-        // antialiasing
-        opacity = clamp(1.0 - distFromNearest(surfacePos), 0.0, 1.0);
-    }
-
+    color = getSurfaceColor(camPos, rayDir, vec3(0));
     fragColor = vec4(color, opacity);
 }
