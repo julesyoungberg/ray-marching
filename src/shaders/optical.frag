@@ -10,7 +10,9 @@ uniform float time;
 
 @import ./primitives/sdBoxDist;
 @import ./util/config;
+@import ./util/calculateNormal;
 @import ./util/castRay;
+@import ./util/rayMarch;
 @import ./util/rotate;
 
 float rand(vec2 co){
@@ -70,9 +72,6 @@ float distFromBoxes(in vec3 p) {
 float distFromNearest(in vec3 p) {
     return distFromBoxes(p);
 }
-
-@import ./util/calculateNormal;
-@import ./util/rayMarch;
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightPos = vec3(2.0, 10.0, 5.0);

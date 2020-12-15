@@ -11,8 +11,11 @@ uniform vec2 resolution;
 uniform float time;
 
 @import ./primitives/sphereDist;
-@import ./util/castRay;
 @import ./util/config;
+@import ./util/calculateNormal;
+@import ./util/castRay;
+@import ./util/getShadowMultiplier;
+@import ./util/rayMarch;
 
 float floorDist(in vec3 p) { return p.y + 1.8; }
 
@@ -23,10 +26,6 @@ float distFromNearest(in vec3 p) {
 
     return min(sphere1, floorDist(p));
 }
-
-@import ./util/calculateNormal;
-@import ./util/getShadowMultiplier;
-@import ./util/rayMarch;
 
 vec3 floorColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 lightPos) {
     return vec3(0.8) * getShadowMultiplier(position, lightPos, 30.0, 0.3);

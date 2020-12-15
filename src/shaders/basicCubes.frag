@@ -8,10 +8,13 @@ uniform vec2 mousePosition;
 uniform vec2 resolution;
 uniform float time;
 
-@import ./util/config;
 @import ./primitives/sdBoxDist;
-@import ./util/rand;
+@import ./util/config;
+@import ./util/calculateNormal;
 @import ./util/castRay;
+@import ./util/getShadowMultiplier;
+@import ./util/rand;
+@import ./util/rayMarch;
 
 float distFromBoxes(in vec3 p) {
     const float size = 0.5;
@@ -32,10 +35,6 @@ float distFromBoxes(in vec3 p) {
 float distFromNearest(in vec3 p) {
     return min(p.z, min(p.x, min(p.y, distFromBoxes(p))));
 }
-
-@import ./util/calculateNormal;
-@import ./util/getShadowMultiplier;
-@import ./util/rayMarch;
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightPos = vec3(10.0, 40.0, 10.0);

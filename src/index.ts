@@ -6,22 +6,22 @@ import createContext from './util/createContext';
 import createUnitQuad2D from './util/createUnitQuad2D';
 
 const basicVertShader = require('./shaders/basic.vert');
-const divisionShader = require('./shaders/division.frag');
 const opticalShader = require('./shaders/optical.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
+const reflectionShader = require('./shaders/reflection.frag');
 
 const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
 const programs = {
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
-    division: twgl.createProgramInfo(gl, [basicVertShader, divisionShader]),
     optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
+    reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
 };
 
 const state = {
-    currentProgram: 'basicCubes',
+    currentProgram: 'reflection',
 };
 
 const gui = new dat.GUI();
