@@ -8,7 +8,7 @@ uniform vec2 mousePosition;
 uniform vec2 resolution;
 uniform float time;
 
-@import ./primitives/sdBoxDist;
+@import ./primitives/sdBox;
 @import ./util/config;
 @import ./util/calculateNormal;
 @import ./util/castRay;
@@ -21,7 +21,7 @@ float distFromBoxes(in vec3 p) {
     const float size = 0.5;
     const float d = size * 2.0;
     vec3 dims = vec3(size);
-    float minimum = sdBoxDist(p - dims, dims);
+    float minimum = sdBox(p - dims, dims);
 
     vec3 pos = p - dims;
     pos = vec3(mod(pos.x + d, d * 2.0) - d, pos.y, mod(pos.z + d, d * 2.0) - d);
@@ -30,7 +30,7 @@ float distFromBoxes(in vec3 p) {
     // vec2 coord = vec2((oPos.x + d) / (d * 2.0), (oPos.z + d) / (d * 2.0));
     // pos.y *= rand(floor(coord)) * 8.0;
 
-    return sdBoxDist(pos, dims);
+    return sdBox(pos, dims);
 }
 
 float distFromNearest(in vec3 p) {

@@ -10,11 +10,12 @@ uniform vec2 mousePosition;
 uniform vec2 resolution;
 uniform float time;
 
-@import ./primitives/sphereDist;
+@import ./primitives/sdSphere;
 @import ./util/config;
 @import ./util/calculateNormal;
 @import ./util/castRay;
 @import ./util/getShadowMultiplier;
+@import ./util/getSurfaceColor;
 @import ./util/rayMarch;
 
 float floorDist(in vec3 p) { return p.y + 1.8; }
@@ -22,7 +23,7 @@ float floorDist(in vec3 p) { return p.y + 1.8; }
 float distFromNearest(in vec3 p) {
     float t = sin(time * 0.5) * 2.0;
     float displacement = sin(6.0 * p.x * mousePosition.x) * sin(8.0 * p.y * mousePosition.y) * sin(5.0 * p.z * t + time * 0.5) * 0.25;
-    float sphere1 = sphereDist(p, vec3(0), 1.0) + displacement;
+    float sphere1 = sdSphere(p, vec3(0), 1.0) + displacement;
 
     return min(sphere1, floorDist(p));
 }
@@ -63,14 +64,6 @@ void main() {
     const float zoom = 1.0;
 
     vec3 rayDir = castRay(uv, camPos, lookAt, zoom);
-    float dist = rayMarch(camPos, rayDir);
-    if (dist < 0.0) {
-        fragColor = vec4(vec3(1.0), 1);
-        return;
-    }
-
-    vec3 surfacePos = camPos + rayDir * dist;
-    vec3 normal = calculateNormal(surfacePos);
-    vec3 color = calculateColor(surfacePos, normal, camPos);
+    vec3 color = getSurfaceColor(camPos, rayDir, vec3(1.0));
     fragColor = vec4(color, 1);
 }

@@ -1,6 +1,7 @@
 float distFromNearest(in vec3 p);
 
-float getShadowMultiplier(in vec3 position, in vec3 lightPos, in float shadowConst, in float b) {
+float getShadowMultiplier(in vec3 position, in vec3 lightPos,
+                          in float shadowConst, in float b) {
     vec3 lightRay = lightPos - position;
     vec3 lightDir = normalize(lightRay);
     float maxLength = length(lightDir);

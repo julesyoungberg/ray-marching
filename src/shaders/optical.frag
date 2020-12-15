@@ -8,7 +8,7 @@ uniform vec2 mousePosition;
 uniform vec2 resolution;
 uniform float time;
 
-@import ./primitives/sdBoxDist;
+@import ./primitives/sdBox;
 @import ./util/config;
 @import ./util/calculateNormal;
 @import ./util/castRay;
@@ -25,15 +25,15 @@ float cubeRow(in vec3 p, in float size, in int n) {
     float d = size * 2.0;
     vec3 dims = vec3(size);
 
-    float minimum = sdBoxDist(pos, dims);
+    float minimum = sdBox(pos, dims);
 
     for (int i = 0; i < n; i++) {
         vec3 offset = vec3(d * float(i), 0, d * float(i));
         minimum = min(
             minimum, 
             min(
-                sdBoxDist(pos - offset, dims),
-                sdBoxDist(pos + offset, dims)
+                sdBox(pos - offset, dims),
+                sdBox(pos + offset, dims)
             )
         );
     }
