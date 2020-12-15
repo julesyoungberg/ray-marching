@@ -88,6 +88,5 @@ void main() {
 
     vec3 rayDir = castRay(uv, camPos, lookAt, zoom);
     vec3 color = getSurfaceColor(camPos, rayDir, vec3(0));
-
     fragColor = vec4(color, 1);
 }

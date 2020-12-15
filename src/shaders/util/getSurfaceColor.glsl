@@ -18,3 +18,7 @@ vec3 getSurfaceColor(in vec3 origin, in vec3 rayDir, in vec3 bg) {
     vec3 normal = calculateNormal(surfacePos);
     return calculateColor(surfacePos, normal, origin);
 }
+
+vec3 getSurfaceColor(in vec3 origin, in vec3 rayDir) {
+    return getSurfaceColor(origin, rayDir, vec3(0));
+}

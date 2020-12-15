@@ -13,6 +13,7 @@ uniform float time;
 @import ./util/calculateNormal;
 @import ./util/castRay;
 @import ./util/getShadowMultiplier;
+@import ./util/getSurfaceColor;
 @import ./util/rand;
 @import ./util/rayMarch;
 
@@ -62,14 +63,6 @@ void main() {
     const float zoom = 1.0;
 
     vec3 rayDir = castRay(uv, camPos, lookAt, zoom);
-    float dist = rayMarch(camPos, rayDir);
-    if (dist < 0.0) {
-        fragColor = vec4(vec3(0), 1);
-        return;
-    }
-
-    vec3 surfacePos = camPos + rayDir * dist;
-    vec3 normal = calculateNormal(surfacePos);
-    vec3 color = calculateColor(surfacePos, normal, camPos);
+    vec3 color = getSurfaceColor(camPos, rayDir);
     fragColor = vec4(color, 1);
 }
