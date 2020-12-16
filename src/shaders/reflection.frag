@@ -11,19 +11,22 @@ uniform float time;
 @import ./primitives/sdBox;
 @import ./primitives/sdSphere;
 @import ./util/config;
-@import ./util/rand;
 @import ./util/calculateNormal;
 @import ./util/calculateShading;
 @import ./util/castRay;
 @import ./util/getReflectionAmount;
 @import ./util/getShadowMultiplier;
+@import ./util/getSmoothSurfaceColor;
 @import ./util/getSurfaceColor;
+@import ./util/getUV;
+@import ./util/hash;
+@import ./util/rand;
 @import ./util/rayMarch;
 
 const float REFLECTIVITY = 0.3;
 const float TRANSMITTANCE = 0.4;
-const int MAX_RAY_BOUNCES = 10;
-const vec3 OBJECT_ABSORB = vec3(0.1, 0.2, 0.4); // for beers law
+const int MAX_RAY_BOUNCES = 3;
+const vec3 OBJECT_ABSORB = vec3(0.4, 0.2, 0.0); // for beers law
 const float REFRACTIVE_INDEX_OUTSIDE = 1.00029;
 const float REFRACTIVE_INDEX_INSIDE = 1.07;
 
@@ -68,7 +71,7 @@ vec3 calculateColorWithoutReflections(in vec3 position, in vec3 normal, in vec3 
         color = vec3(1, 1, 1);
         specColor = vec3(0.9);
     } else {
-        color = vec3(0, 0, 1);
+        color = vec3(1, 0, 0);
         specColor = vec3(0.8);
     }
 
@@ -191,10 +194,8 @@ void main() {
     vec3 camPos = vec3(20.0, 5.0, 15.0);
     const vec3 lookAt = spherePos;
     const float zoom = 1.0;
-    vec3 color;
-    float opacity = 1.0;
 
-    vec3 rayDir = castRay(uv, camPos, lookAt, zoom);
-    color = getSurfaceColor(camPos, rayDir, vec3(0));
-    fragColor = vec4(color, opacity);
+    vec3 finalColor = getSmoothSurfaceColor(gl_FragCoord.xy, resolution, camPos, lookAt, zoom, vec3(0), 2);
+
+    fragColor = vec4(finalColor, 1.0);
 }
