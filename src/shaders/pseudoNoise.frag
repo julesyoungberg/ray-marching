@@ -29,7 +29,7 @@ float distFromNearest(in vec3 p) {
 }
 
 vec3 floorColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 lightPos) {
-    return vec3(0.8) * getShadowMultiplier(position, lightPos, 30.0, 0.3);
+    return vec3(0.97) * getShadowMultiplier(position, lightPos, 30.0, 0.3);
 }
 
 vec3 sphereColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 lightPos) {

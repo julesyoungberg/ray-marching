@@ -20,16 +20,15 @@ uniform float time;
 @import ./util/getSurfaceColor;
 @import ./util/rayMarch;
 
-const float REFLECTIVITY = 1.0;
-const float TRANSMITTANCE = 0.0;
+const float REFLECTIVITY = 0.3;
+const float TRANSMITTANCE = 0.4;
 const int MAX_RAY_BOUNCES = 10;
-const vec3 OBJECT_ABSORB = vec3(8.0, 8.0, 3.0); // for beers law
+const vec3 OBJECT_ABSORB = vec3(0.1, 0.2, 0.4); // for beers law
 const float REFRACTIVE_INDEX_OUTSIDE = 1.00029;
-const float REFRACTIVE_INDEX_INSIDE = 1.125;
+const float REFRACTIVE_INDEX_INSIDE = 1.07;
 
 const float sphereRadius = 3.0;
 const vec3 spherePos = vec3(10.0, sphereRadius, 10.0);
-const vec3 sphereColor = vec3(1, 1, 1);
 const vec3 boxPos = vec3(17.0, sphereRadius / 3.0, 10.0);
 
 float distFromWalls(in vec3 p) {
@@ -105,16 +104,17 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
     vec3 rayPos = position;
     vec3 rayDir = normalize(position - eyePos);
     rayDir = refract(rayDir, normal, REFRACTIVE_INDEX_OUTSIDE / REFRACTIVE_INDEX_INSIDE);
+    rayPos += rayDir * 0.01; // make sure the ray goes through the object
 
     for (int i = 0; i < MAX_RAY_BOUNCES; i++) {
-        float dist = rayMarch(rayPos, rayDir);
+        float dist = rayMarchInternal(rayPos, rayDir);
         if (dist < 0.0) {
-            return result;
+            return vec3(1, 0, 0);
         }
 
         vec3 prevPos = rayPos;
         rayPos += rayDir * dist;
-        vec3 currentNormal = calculateNormal(rayPos);
+        vec3 currentNormal = -calculateNormal(rayPos + rayDir * 0.01);
 
         // calculate beer's law absorption.
         absorbDistance += dist;
@@ -126,7 +126,7 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
 
         // refract the internal ray and raymarch to find the outside color
         vec3 refractDir = refract(rayDir, currentNormal, REFRACTIVE_INDEX_INSIDE / REFRACTIVE_INDEX_OUTSIDE);
-        vec3 refractOrg = rayPos + refractDir * 0.02;
+        vec3 refractOrg = rayPos + refractDir * 0.01;
         float refractDist = rayMarch(refractOrg, refractDir);
         vec3 refractColor = vec3(0);
         if (refractDist >= 0.0) {
@@ -137,11 +137,11 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
         result += refractColor * refractAmount * multiplier * absorb;
 
         // add specular highlight based on refracted ray direction
-        result += calculateShading(rayPos, refractDir, prevPos, lightPos, vec3(0)) * refractAmount * multiplier * absorb;
+        result += calculateShading(rayPos, refractDir, prevPos, lightPos, vec3(0)) * refractAmount * multiplier; // * absorb;
 
         // follow the ray down the internal reflection path.
         rayDir = reflect(rayDir, currentNormal);
-        rayPos += rayDir * 0.02;
+        rayPos += rayDir * 0.01;
 
         multiplier *= reflectAmount;
     }
