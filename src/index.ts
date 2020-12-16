@@ -6,7 +6,7 @@ import createContext from './util/createContext';
 import createUnitQuad2D from './util/createUnitQuad2D';
 
 const basicVertShader = require('./shaders/basic.vert');
-const opticalShader = require('./shaders/optical.frag');
+// const opticalShader = require('./shaders/optical.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
@@ -17,7 +17,7 @@ const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
 const programs = {
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
-    optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
+    // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
