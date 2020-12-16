@@ -14,7 +14,7 @@ uniform float time;
 @import ./primitives/udQuad;
 @import ./util/config;
 @import ./util/calculateNormal;
-@import ./util/calculateshading;
+@import ./util/calculateShading;
 @import ./util/castRay;
 @import ./util/getShadowMultiplier;
 @import ./util/getSmoothSurfaceColor;

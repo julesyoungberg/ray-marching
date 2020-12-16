@@ -107,7 +107,7 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
     vec3 rayPos = position;
     vec3 rayDir = normalize(position - eyePos);
     rayDir = refract(rayDir, normal, REFRACTIVE_INDEX_OUTSIDE / REFRACTIVE_INDEX_INSIDE);
-    rayPos += rayDir * 0.01; // make sure the ray goes through the object
+    rayPos += rayDir * 0.02; // make sure the ray goes through the object
 
     for (int i = 0; i < MAX_RAY_BOUNCES; i++) {
         float dist = rayMarchInternal(rayPos, rayDir);
@@ -117,7 +117,7 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
 
         vec3 prevPos = rayPos;
         rayPos += rayDir * dist;
-        vec3 currentNormal = -calculateNormal(rayPos + rayDir * 0.01);
+        vec3 currentNormal = -calculateNormal(rayPos + rayDir * 0.02);
 
         // calculate beer's law absorption.
         absorbDistance += dist;
@@ -129,7 +129,7 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
 
         // refract the internal ray and raymarch to find the outside color
         vec3 refractDir = refract(rayDir, currentNormal, REFRACTIVE_INDEX_INSIDE / REFRACTIVE_INDEX_OUTSIDE);
-        vec3 refractOrg = rayPos + refractDir * 0.01;
+        vec3 refractOrg = rayPos + refractDir * 0.02;
         float refractDist = rayMarch(refractOrg, refractDir);
         vec3 refractColor = vec3(0);
         if (refractDist >= 0.0) {
@@ -144,7 +144,7 @@ vec3 calculateTransmitted(in vec3 position, in vec3 normal, in vec3 eyePos, in v
 
         // follow the ray down the internal reflection path.
         rayDir = reflect(rayDir, currentNormal);
-        rayPos += rayDir * 0.01;
+        rayPos += rayDir * 0.02;
 
         multiplier *= reflectAmount;
     }
