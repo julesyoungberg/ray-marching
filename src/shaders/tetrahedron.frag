@@ -16,7 +16,7 @@ const float MAX_TRACE_DISTANCE = 1000.0;
 
 @import ./primitives/sdTetrahedron;
 @import ./util/calculateNormal;
-@import ./util/calculateshading;
+@import ./util/calculateShading;
 @import ./util/castRay;
 @import ./util/createRotationMatrix;
 @import ./util/getShadowMultiplier;
