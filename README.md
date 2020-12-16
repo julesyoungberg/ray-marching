@@ -1,5 +1,7 @@
-# Typescript TWGL Template
+# Ray Marching
 
-Typescript WebGL Template (with [TWGL.js](https://twgljs.org/)), using webpack, prettier, and eslint.
+Basic ray marching in WebGL.
 
-The code included is the [tiny example](https://github.com/greggman/twgl.js/blob/master/examples/tiny.html) from TWGL.js
+Template: https://github.com/julesyoungberg/typescript-twgl-template
+
+Demo: https://ray-marching.vercel.app/
