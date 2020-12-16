@@ -24,7 +24,7 @@ uniform float time;
 @import ./util/rayMarch;
 
 const float REFLECTIVITY = 0.3;
-const float TRANSMITTANCE = 0.4;
+const float TRANSMITTANCE = 0.3;
 const int MAX_RAY_BOUNCES = 3;
 const vec3 OBJECT_ABSORB = vec3(0.4, 0.2, 0.0); // for beers law
 const float REFRACTIVE_INDEX_OUTSIDE = 1.00029;

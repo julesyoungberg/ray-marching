@@ -10,6 +10,7 @@ const opticalShader = require('./shaders/optical.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
+const spotlightShader = require('./shaders/spotlight.frag');
 
 const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
@@ -18,10 +19,11 @@ const programs = {
     optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
+    spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
 };
 
 const state = {
-    currentProgram: 'reflection',
+    currentProgram: 'spotlight',
 };
 
 const gui = new dat.GUI();
