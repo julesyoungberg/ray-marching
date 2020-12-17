@@ -4,8 +4,13 @@ precision highp float;
 in vec2 uv;
 out vec4 fragColor;
 
+uniform bool drawFloor;
+uniform float fogDist;
 uniform vec2 mousePosition;
+uniform float quality;
 uniform vec2 resolution;
+uniform vec3 shapeColor;
+uniform bool spin;
 uniform float time;
 
 // ray marching
@@ -40,6 +45,7 @@ uniform float time;
 @import ./util/calculatePhong;
 @import ./util/calculateReflections;
 @import ./util/calculateShadow;
+@import ./util/castRay;
 @import ./util/getUV;
 @import ./util/hash;
 @import ./util/marchRay;
@@ -74,7 +80,7 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
     vec3 p = pos;
     float r = dot(p, p);
     mat4 rotation1 = createRotationMatrix(vec3(0.0, 70.0, 0.0));
-    mat4 rotation2 = createRotationMatrix(vec3(15.0, 0.0, 0.0));
+    mat4 rotation2 = createRotationMatrix(vec3(30.0, 0.0, 0.0));
     int i;
 
     for (i = 0; i < iterations && r < 1000.0; i++) {
@@ -121,7 +127,7 @@ vec3 getWallColor(in vec3 position) {
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightDir = normalize(LIGHT_POS - position);
-    vec3 color = vec3(1.0, 1.0, 1.0);
+    vec3 color = shapeColor;
     color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
     color *= calculateShadow(position, normal, LIGHT_POS);
     return color;
@@ -137,7 +143,7 @@ void main() {
     vec3 backgroundColor;
     vec3 rayOrigin;
     vec3 rayDir;
-    float d = 1.0;
+    float d = quality;
     float numSubPixels = pow(d, 2.0);
 
     for(float i = 1.0; i <= numSubPixels; i += 1.0) {
@@ -148,22 +154,30 @@ void main() {
         jitter.y += y / d;
 
         currentUV = getUV(gl_FragCoord.xy + jitter, resolution);
-        getRayData(currentUV, camPos, lookAt, time, rayOrigin, rayDir);
+        if (spin) {
+            getRayData(currentUV, camPos, lookAt, time, rayOrigin, rayDir);
+        } else {
+            getRayData(currentUV, camPos, lookAt, 0.0, rayOrigin, rayDir);
+        }
         backgroundColor = getBackgroundColor(uv);
 
         float dist = marchRay(rayOrigin, rayDir, 0.0);
-        vec3 color = backgroundColor;
+        vec3 color = vec3(1.0);
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
         if (dist < 0.0) {
-            dist = calculateFloorDist(rayOrigin, rayDir, FLOOR_LEVEL);
-            if (dist >= 0.0) {
-                isFloor = true;
-                surfacePos = rayOrigin + rayDir * dist;
-                surfaceNorm = vec3(0, 1, 0);
-                color = vec3(1.0);
-                color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
-                color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+            if (drawFloor) {
+                dist = calculateFloorDist(rayOrigin, rayDir, FLOOR_LEVEL);
+                if (dist >= 0.0) {
+                    isFloor = true;
+                    surfacePos = rayOrigin + rayDir * dist;
+                    surfaceNorm = vec3(0, 1, 0);
+                    color = vec3(1.0);
+                    color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
+                    color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+                }
+            } else {
+                dist = fogDist;
             }
         } else {
             surfacePos = rayOrigin + rayDir * dist;
@@ -176,7 +190,7 @@ void main() {
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);
-        color = mix(color, vec3(0.5), pow(dist / 20.0, 2.0));
+        color = mix(color, vec3(0.5), pow(dist / fogDist, 2.0));
         finalColor = mix(finalColor, color, 1.0 / i);
     }
 

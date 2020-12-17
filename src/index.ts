@@ -32,10 +32,23 @@ const programs = {
 
 const state = {
     currentProgram: 'recursiveShapes',
+    floor: true,
+    fogDist: 15,
+    quality: 1,
+    shapeColor: [255, 255, 255],
+    spin: true,
 };
 
 const gui = new dat.GUI();
 gui.add(state, 'currentProgram', Object.keys(programs));
+
+const general = gui.addFolder('general');
+general.open();
+general.add(state, 'quality', 1, 4, 1);
+general.add(state, 'floor');
+general.add(state, 'fogDist', 15, 100, 1);
+general.addColor(state, 'shapeColor');
+general.add(state, 'spin');
 
 const pointers = new Pointers(gl.canvas as HTMLCanvasElement);
 
@@ -45,9 +58,14 @@ function render(time: number) {
 
     const p = pointers.pointers;
     const uniforms = {
+        drawFloor: state.floor,
+        fogDist: state.fogDist,
         mousePosition: [p[0].x * 2 - 1, p[0].y * 2 - 1],
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
+        quality: state.quality,
         resolution: [gl.canvas.width, gl.canvas.height],
+        shapeColor: state.shapeColor.map(c => c / 255),
+        spin: state.spin,
         time: time * 0.001,
     };
 
