@@ -10,6 +10,7 @@ const basicVertShader = require('./shaders/basic.vert');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
+const reflectionsShader = require('./shaders/reflections.frag');
 const spotlightShader = require('./shaders/spotlight.frag');
 const tetrahedronShader = require('./shaders/tetrahedron.frag');
 
@@ -20,12 +21,13 @@ const programs = {
     // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
+    reflections: twgl.createProgramInfo(gl, [basicVertShader, reflectionsShader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
     tetrahedron: twgl.createProgramInfo(gl, [basicVertShader, tetrahedronShader]),
 };
 
 const state = {
-    currentProgram: 'tetrahedron',
+    currentProgram: 'reflections',
 };
 
 const gui = new dat.GUI();
