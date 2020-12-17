@@ -39,6 +39,16 @@ const state = {
     spin: true,
 };
 
+const urlHash = window.location.hash;
+if (urlHash) {
+    const name = urlHash.substr(1);
+    console.log(name);
+    const program = programs[name];
+    if (program) {
+        state.currentProgram = name;
+    }
+}
+
 const gui = new dat.GUI();
 gui.add(state, 'currentProgram', Object.keys(programs));
 
