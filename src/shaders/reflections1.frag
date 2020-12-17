@@ -15,8 +15,8 @@ uniform float time;
 
 // shading
 #define LIGHT_POS vec3(2.0, 10.0, 8.0)
-#define REFLECTIVITY 0.4
-#define REFLECTION_BOUNCES 2
+#define REFLECTIVITY 0.5
+#define REFLECTION_BOUNCES 1
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
 #define MATERIAL_SHININESS 4.
@@ -84,7 +84,7 @@ vec3 calculateReflections(in vec3 position, in vec3 normal, in vec3 color, in ve
         vec3 surfacePos = rayOrigin + rayDir * dist;
         vec3 surfaceNorm = calculateNormal(surfacePos);
         vec3 surfaceColor = calculateColor(surfacePos, surfaceNorm, eyePos);
-        finalColor = mix(finalColor, surfaceColor, REFLECTIVITY);
+        finalColor = mix(finalColor, surfaceColor, amount);
 
         rayOrigin = surfacePos;
         rayDir = reflect(rayDir, surfaceNorm);

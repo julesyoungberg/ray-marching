@@ -16,7 +16,7 @@ uniform float time;
 // shading
 #define LIGHT_POS vec3(2.0, 10.0, 8.0)
 #define REFLECTIVITY 0.5
-#define MATERIAL_SHININESS 4.
+#define MATERIAL_SHININESS 16.
 #define MATERIAL_AMBIENT_STRENGTH 0.2
 #define MATERIAL_DIFFUSE_STRENGTH 0.8
 #define MATERIAL_SPECULAR_STRENGTH 0.6
@@ -37,6 +37,7 @@ uniform float time;
 @import ./util/config;
 @import ./util/calculateNormal;
 @import ./util/calculatePhong;
+@import ./util/calculateSoftShadow;
 @import ./util/castRay;
 @import ./util/getUV;
 @import ./util/hash;
@@ -99,30 +100,6 @@ vec3 applyReflections(vec3 position, vec3 normal, vec3 color, vec3 eyePos, vec3 
     return color + reflectedColor * REFLECTIVITY;
 }
 
-float softShadow(vec3 position, vec3 lightPos, float k) {
-    const int maxIterationsShad = 24; 
-    vec3 rayDir = lightPos - position;
-
-    float shade = 1.0;
-    float dist = .002; 
-    float end = max(length(rayDir), .001);
-    float stepDist = end / float(maxIterationsShad);
-    rayDir /= end;
-
-    for (int i = 0; i < maxIterationsShad; i++) {
-        float h = distFromNearest(position + rayDir * dist);
-        shade = min(shade, smoothstep(0., 1., k * h / dist));
-        dist += clamp(h, .02, .25);
-        
-        // Early exits from accumulative distance function calls tend to be a good thing.
-        if (h < 0.0 || dist > end) {
-            break;
-        }
-    }
-
-    return min(max(shade, 0.0) + 0.25, 1.0); 
-}
-
 void main() {
     vec3 rayDir = normalize(vec3(uv, 1));
     float cs = cos(time * .25), si = sin(time * .25);
@@ -142,7 +119,7 @@ void main() {
     vec3 lightPos = camPos + vec3(0, 1, 5);
     vec3 color = getColor(surfacePos, surfaceNorm, camPos, lightPos, dist);
     color = applyReflections(surfacePos, surfaceNorm, color, camPos, lightPos);
-    color *= softShadow(surfacePos + surfaceNorm * 0.01, lightPos, 16.0);
+    color *= calculateSoftShadow(surfacePos + surfaceNorm * 0.01, lightPos, 16.0);
 
     fragColor = vec4(sqrt(clamp(color, 0., 1.)), 1);
 }

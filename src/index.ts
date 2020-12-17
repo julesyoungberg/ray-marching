@@ -14,6 +14,7 @@ const reflections1Shader = require('./shaders/reflections1.frag');
 const reflections2Shader = require('./shaders/reflections2.frag');
 const spotlightShader = require('./shaders/spotlight.frag');
 const tetrahedronShader = require('./shaders/tetrahedron.frag');
+const twistShader = require('./shaders/twist.frag');
 
 const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
@@ -26,10 +27,11 @@ const programs = {
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
     tetrahedron: twgl.createProgramInfo(gl, [basicVertShader, tetrahedronShader]),
+    twist: twgl.createProgramInfo(gl, [basicVertShader, twistShader]),
 };
 
 const state = {
-    currentProgram: 'reflections2',
+    currentProgram: 'twist',
 };
 
 const gui = new dat.GUI();
