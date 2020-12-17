@@ -7,8 +7,9 @@ import createUnitQuad2D from './util/createUnitQuad2D';
 
 const basicVertShader = require('./shaders/basic.vert');
 // const opticalShader = require('./shaders/optical.frag');
-const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
+const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
+const recursiveShapesShader = require('./shaders/recursiveShapes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
 const reflections1Shader = require('./shaders/reflections1.frag');
 const reflections2Shader = require('./shaders/reflections2.frag');
@@ -21,6 +22,7 @@ const programs = {
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
     // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
+    recursiveShapes: twgl.createProgramInfo(gl, [basicVertShader, recursiveShapesShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
     reflections1: twgl.createProgramInfo(gl, [basicVertShader, reflections1Shader]),
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
@@ -29,7 +31,7 @@ const programs = {
 };
 
 const state = {
-    currentProgram: 'tetrahedron',
+    currentProgram: 'recursiveShapes',
 };
 
 const gui = new dat.GUI();

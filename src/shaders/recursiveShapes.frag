@@ -30,7 +30,7 @@ uniform float time;
 #define FLOOR_FADE_END 50.
 #define CAMERA_MOVEMENT_SPEED -20.
 #define CAMERA_INV_DISTANCE_MULTIPLIER 4.
-#define FLOOR_LEVEL -1.0
+#define FLOOR_LEVEL -1.5
 
 #define EPSILON 1e-5
 
@@ -73,10 +73,13 @@ void getRayData(const vec2 uv, const vec3 camPos, const vec3 lookAt,
 float sdTetrahedron(const vec3 pos, const float scale, const int iterations, const vec3 offset) {
     vec3 p = pos;
     float r = dot(p, p);
-    float x1, y1;
+    mat4 rotation1 = createRotationMatrix(vec3(0.0, 70.0, 0.0));
+    mat4 rotation2 = createRotationMatrix(vec3(15.0, 0.0, 0.0));
     int i;
 
     for (i = 0; i < iterations && r < 1000.0; i++) {
+        p = rotateVec(p, rotation1);
+
         if (p.x + p.y < 0.0) { 
             p.xy = -p.yx;
         }
@@ -86,6 +89,8 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
         if (p.y + p.z < 0.0) { 
             p.yz = -p.zy;
         }
+
+        p = rotateVec(p, rotation2);
 
         p.x = scale * p.x - (scale - 1.0);
         p.y = scale * p.y - (scale - 1.0);
@@ -116,7 +121,7 @@ vec3 getWallColor(in vec3 position) {
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
     vec3 lightDir = normalize(LIGHT_POS - position);
-    vec3 color = vec3(0.0, 1.0, 0);
+    vec3 color = vec3(1.0, 1.0, 1.0);
     color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
     color *= calculateShadow(position, normal, LIGHT_POS);
     return color;
@@ -151,10 +156,10 @@ void main() {
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
         if (dist < 0.0) {
-            float floorDist = calculateFloorDist(rayOrigin, rayDir, FLOOR_LEVEL);
-            if (floorDist >= 0.0) {
+            dist = calculateFloorDist(rayOrigin, rayDir, FLOOR_LEVEL);
+            if (dist >= 0.0) {
                 isFloor = true;
-                surfacePos = rayOrigin + rayDir * floorDist;
+                surfacePos = rayOrigin + rayDir * dist;
                 surfaceNorm = vec3(0, 1, 0);
                 color = vec3(1.0);
                 color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
@@ -171,6 +176,7 @@ void main() {
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);
+        color = mix(color, vec3(0.5), pow(dist / 20.0, 2.0));
         finalColor = mix(finalColor, color, 1.0 / i);
     }
 

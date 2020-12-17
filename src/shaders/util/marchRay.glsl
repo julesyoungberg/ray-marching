@@ -1,6 +1,7 @@
 float distFromNearest(in vec3 p);
 
 /**
+ * Similar to rayMarch except it doesn't care about steps, only ray length
  * To use the following must be defined:
  * - MAX_RAY_LENGTH
  * - MIN_HIT_DISTANCE

@@ -27,8 +27,8 @@ mat4 createTranslationMatrix(vec3 position) {
     return translationMatrix;
 }
 
-// Input is in degrees, but to calculate everything property we need radians
 mat4 createRotationMatrix(vec3 rotationEuler) {
+    // Input is in degrees, but to calculate everything property we need radians
     vec3 rotationTheta = rotationEuler * (3.1416 / 180.);
 
     vec3 cosTheta = cos(rotationTheta);
