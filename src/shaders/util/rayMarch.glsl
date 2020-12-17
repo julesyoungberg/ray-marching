@@ -1,6 +1,7 @@
 float distFromNearest(in vec3 p);
 
-float rayMarch(in vec3 ro, in vec3 rd, in float maxDist, in bool internal) {
+float rayMarch(in vec3 ro, in vec3 rd, in float minHitDist, in float maxDist,
+               in int numSteps, in bool internal) {
     float totalDistancetraveled = 0.0;
 
     for (int i = 0; i < NUM_STEPS; i++) {
@@ -14,28 +15,38 @@ float rayMarch(in vec3 ro, in vec3 rd, in float maxDist, in bool internal) {
             break;
         }
 
-        if (dist < MIN_HIT_DISTANCE) {
+        if (dist < minHitDist) {
             return totalDistancetraveled;
         }
 
-        totalDistancetraveled += dist;
+        totalDistancetraveled += dist * 0.98;
     }
 
     return -1.0;
 }
 
-float rayMarch(in vec3 ro, in vec3 rd, in float maxDist) {
-    return rayMarch(ro, rd, maxDist, false);
+float rayMarch(in vec3 ro, in vec3 rd, in float accuracy, in bool internal) {
+    return rayMarch(ro, rd, MIN_HIT_DISTANCE / accuracy,
+                    MAX_TRACE_DISTANCE * accuracy, NUM_STEPS / int(accuracy),
+                    internal);
 }
 
-float rayMarch(in vec3 ro, in vec3 rd) {
-    return rayMarch(ro, rd, MAX_TRACE_DISTANCE);
+float rayMarch(in vec3 ro, in vec3 rd, in float accuracy) {
+    return rayMarch(ro, rd, accuracy, false);
 }
 
-float rayMarchInternal(in vec3 ro, in vec3 rd, in float maxDist) {
-    return rayMarch(ro, rd, maxDist, true);
+float rayMarch(in vec3 ro, in vec3 rd) { return rayMarch(ro, rd, 1.0); }
+
+float rayMarchFast(in vec3 ro, in vec3 rd) { return rayMarch(ro, rd, 0.5); }
+
+float rayMarchInternal(in vec3 ro, in vec3 rd, in float accuracy) {
+    return rayMarch(ro, rd, accuracy, true);
 }
 
 float rayMarchInternal(in vec3 ro, in vec3 rd) {
-    return rayMarchInternal(ro, rd, MAX_TRACE_DISTANCE);
+    return rayMarchInternal(ro, rd, 1.0);
+}
+
+float rayMarchInternalFast(in vec3 ro, in vec3 rd) {
+    return rayMarchInternal(ro, rd, 0.5);
 }

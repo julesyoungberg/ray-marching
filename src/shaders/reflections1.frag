@@ -16,7 +16,7 @@ uniform float time;
 // shading
 #define LIGHT_POS vec3(2.0, 10.0, 8.0)
 #define REFLECTIVITY 0.4
-#define REFLECTION_BOUNCES 3
+#define REFLECTION_BOUNCES 2
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
 #define MATERIAL_SHININESS 4.
@@ -56,14 +56,6 @@ float distFromNearest(in vec3 p) {
     const float d = size * 2.0;
     vec3 pos = mod(p + d, d * 2.0) - d;
     return sdSphere(pos, vec3(0), 1.0);
-}
-
-vec3 getWallColor(in vec3 position) {
-    const float scale = 1.0;
-    vec3 p = position * scale;
-    float total = floor(p.x) + floor(p.y) + floor(p.z);
-    bool isEven = mod(total, 2.0) == 0.0;
-    return mix(vec3(0.4), vec3(0.9), float(isEven));
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
@@ -113,7 +105,7 @@ void main() {
     vec3 backgroundColor;
     vec3 rayOrigin = camPos;
     vec3 rayDir;
-    float d = 2.0;
+    float d = 1.0;
     float numSubPixels = pow(d, 2.0);
 
     for(float i = 1.0; i <= numSubPixels; i += 1.0) {
