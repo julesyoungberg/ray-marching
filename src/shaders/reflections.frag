@@ -10,13 +10,13 @@ uniform float time;
 
 // ray marching
 #define FRAME_OF_VIEW 1.0
-#define MAX_RAY_LENGTH 22.0
+#define MAX_RAY_LENGTH 20.0
 #define RAY_PUSH 0.02
 
 // shading
 #define LIGHT_POS vec3(2.0, 10.0, 8.0)
-#define REFLECTIVITY 0.5
-#define REFLECTION_BOUNCES 5
+#define REFLECTIVITY 0.4
+#define REFLECTION_BOUNCES 3
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
 #define MATERIAL_SHININESS 4.
@@ -54,10 +54,7 @@ vec3 getBackgroundColor(const vec2 st) {
 float distFromNearest(in vec3 p) {
     const float size = 1.0;
     const float d = size * 2.0;
-    vec3 pos = vec3(mod(p.x + d, d * 2.0) - d, p.y,mod(p.z + d, d * 2.0) - d);
-    if (pos.y >= 0.0) {
-        pos.y = mod(p.y + d * 2.0, d * 4.0) - d * 2.0;
-    }
+    vec3 pos = mod(p + d, d * 2.0) - d;
     return sdSphere(pos, vec3(0), 1.0);
 }
 
@@ -70,10 +67,11 @@ vec3 getWallColor(in vec3 position) {
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    vec3 lightDir = normalize(LIGHT_POS - position);
-    vec3 color = vec3(1.0, 1.0, 1.0);
-    color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
-    color *= calculateShadow(position, normal, LIGHT_POS);
+    vec3 lightPos = eyePos;
+    vec3 lightDir = normalize(lightPos - position);
+    vec3 color = vec3(1.0, 1.0, 0.58);
+    color = calculatePhong(position, normal, eyePos, lightPos, color);
+    color *= calculateShadow(position, normal, lightPos);
     return color;
 }
 
@@ -83,25 +81,31 @@ vec3 calculateReflections(in vec3 position, in vec3 normal, in vec3 color, in ve
     rayDir = reflect(rayDir, normal);
     
     vec3 finalColor = color;
+    float amount = REFLECTIVITY;
 
     for (int i = 0; i < REFLECTION_BOUNCES; i++) {
-        float dist = marchRay(position, rayDir, RAY_PUSH);
-        if (dist < 0.0) {
+        float dist = marchRay(rayOrigin, rayDir, RAY_PUSH);
+        if (dist < 0.0 || amount <= 1e-5) {
             break;
         }
 
-        vec3 surfacePos = position + rayDir * dist;
+        vec3 surfacePos = rayOrigin + rayDir * dist;
         vec3 surfaceNorm = calculateNormal(surfacePos);
         vec3 surfaceColor = calculateColor(surfacePos, surfaceNorm, eyePos);
         finalColor = mix(finalColor, surfaceColor, REFLECTIVITY);
+
+        rayOrigin = surfacePos;
+        rayDir = reflect(rayDir, surfaceNorm);
+        amount *= REFLECTIVITY;
     }
 
     return finalColor;
 }
 
 void main() {
-    const vec3 camPos = vec3(11.0, 5., 11.0);
-    const vec3 lookAt = vec3(0.0);
+    float t = mod(time, 3.2) * -5.0;
+    vec3 camPos = vec3(t, 6.0, t);
+    vec3 lookAt = vec3(t - 11.0, 6.0, t - 11.0);
     const float zoom = 1.0;
 
     vec3 finalColor = vec3(0.0);
@@ -109,7 +113,7 @@ void main() {
     vec3 backgroundColor;
     vec3 rayOrigin = camPos;
     vec3 rayDir;
-    float d = 4.0;
+    float d = 2.0;
     float numSubPixels = pow(d, 2.0);
 
     for(float i = 1.0; i <= numSubPixels; i += 1.0) {
@@ -126,26 +130,14 @@ void main() {
         float dist = rayMarch(rayOrigin, rayDir);
         vec3 color = backgroundColor;
         vec3 surfacePos, surfaceNorm;
-        if (dist < 0.0) {
-            float floorDist = calculateFloorDist(rayOrigin, rayDir, FLOOR_LEVEL);
-            if (floorDist >= 0.0) {
-                surfacePos = rayOrigin + rayDir * floorDist;
-                surfaceNorm = vec3(0, 1, 0);
-                color = getWallColor(surfacePos);
-                color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
-                color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
-                color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
-                // color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin);
-            }
-        } else {
+        if (dist >= 0.0) {
             surfacePos = rayOrigin + rayDir * dist;
             surfaceNorm = calculateNormal(surfacePos);
             color = calculateColor(surfacePos, surfaceNorm, rayOrigin);
             color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
             color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin);
+            color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
         }
-        
-        color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);
