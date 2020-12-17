@@ -1,7 +1,7 @@
 float distFromNearest(in vec3 p);
 
 vec3 calculateNormal(in vec3 point) {
-    const vec3 stp = vec3(0.001, 0, 0);
+    const vec3 stp = vec3(1e-5, 0, 0);
 
     float x =
         distFromNearest(point + stp.xyy) - distFromNearest(point - stp.xyy);
