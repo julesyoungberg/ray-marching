@@ -34,6 +34,7 @@ uniform float time;
 
 #define EPSILON 1e-5
 
+@import ./primitives/opTwist;
 @import ./primitives/sdTetrahedron;
 @import ./util/calculateAmbientOcclusion;
 @import ./util/calculateFloorDist;
@@ -78,7 +79,7 @@ float shapeDist(in vec3 pos) {
 }
 
 float distFromNearest(in vec3 p) {
-    return shapeDist(p);
+    return shapeDist(p); //opTwist(p, 0.01));
 }
 
 vec3 getWallColor(in vec3 position) {
@@ -131,7 +132,7 @@ void main() {
                 isFloor = true;
                 surfacePos = rayOrigin + rayDir * floorDist;
                 surfaceNorm = vec3(0, 1, 0);
-                color = getWallColor(surfacePos);
+                color = vec3(1.0);
                 color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
                 color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
             }
