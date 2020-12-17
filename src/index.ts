@@ -33,8 +33,16 @@ const programs = {
 const state = {
     currentProgram: 'recursiveShapes',
     floor: true,
-    fogDist: 15,
+    fogDist: 30,
     quality: 1,
+    recursiveShapes: {
+        rotation1X: 0,
+        rotation1Y: 70,
+        rotation1Z: 0,
+        rotation2X: 30,
+        rotation2Y: 0,
+        rotation2Z: 0,
+    },
     shapeColor: [255, 255, 255],
     spin: true,
 };
@@ -60,6 +68,15 @@ general.add(state, 'fogDist', 15, 100, 1);
 general.addColor(state, 'shapeColor');
 general.add(state, 'spin');
 
+const rsCtrl = gui.addFolder('recursiveShapes');
+rsCtrl.open();
+rsCtrl.add(state.recursiveShapes, 'rotation1X', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'rotation1Y', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'rotation1Z', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'rotation2X', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'rotation2Y', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'rotation2Z', 0, 180);
+
 const pointers = new Pointers(gl.canvas as HTMLCanvasElement);
 
 function render(time: number) {
@@ -74,6 +91,16 @@ function render(time: number) {
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
         quality: state.quality,
         resolution: [gl.canvas.width, gl.canvas.height],
+        rsRotation1: [
+            state.recursiveShapes.rotation1X,
+            state.recursiveShapes.rotation1Y,
+            state.recursiveShapes.rotation1Z,
+        ],
+        rsRotation2: [
+            state.recursiveShapes.rotation2X,
+            state.recursiveShapes.rotation2Y,
+            state.recursiveShapes.rotation2Z,
+        ],
         shapeColor: state.shapeColor.map(c => c / 255),
         spin: state.spin,
         time: time * 0.001,

@@ -9,6 +9,8 @@ uniform float fogDist;
 uniform vec2 mousePosition;
 uniform float quality;
 uniform vec2 resolution;
+uniform vec3 rsRotation1;
+uniform vec3 rsRotation2;
 uniform vec3 shapeColor;
 uniform bool spin;
 uniform float time;
@@ -79,8 +81,8 @@ void getRayData(const vec2 uv, const vec3 camPos, const vec3 lookAt,
 float sdTetrahedron(const vec3 pos, const float scale, const int iterations, const vec3 offset) {
     vec3 p = pos;
     float r = dot(p, p);
-    mat4 rotation1 = createRotationMatrix(vec3(0.0, 70.0, 0.0));
-    mat4 rotation2 = createRotationMatrix(vec3(30.0, 0.0, 0.0));
+    mat4 rotation1 = createRotationMatrix(rsRotation1);
+    mat4 rotation2 = createRotationMatrix(rsRotation2);
     int i;
 
     for (i = 0; i < iterations && r < 1000.0; i++) {
