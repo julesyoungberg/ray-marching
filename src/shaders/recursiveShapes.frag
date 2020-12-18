@@ -13,6 +13,7 @@ uniform vec3 rsCenterScale;
 uniform vec3 rsRotation1;
 uniform vec3 rsRotation2;
 uniform vec3 shapeColor;
+uniform vec3 shapeRotation;
 uniform bool spin;
 uniform float time;
 
@@ -38,7 +39,7 @@ uniform float time;
 #define FLOOR_FADE_END 50.
 #define CAMERA_MOVEMENT_SPEED -20.
 #define CAMERA_INV_DISTANCE_MULTIPLIER 4.
-#define FLOOR_LEVEL -1.5
+#define FLOOR_LEVEL -1.8
 
 #define EPSILON 1e-5
 
@@ -112,7 +113,7 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
 }
 
 float shapeDist(in vec3 pos) {
-    mat4 rot = createRotationMatrix(vec3(35., 0., -45.));
+    mat4 rot = createRotationMatrix(shapeRotation);
     vec3 p = (rot * vec4(pos, 1.)).xyz;
     return sdTetrahedron(p, 2.0, 10, vec3(0, 1, 0));
 }

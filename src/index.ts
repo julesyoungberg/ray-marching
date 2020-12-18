@@ -47,6 +47,9 @@ const state = {
         rotation2Z: 0,
     },
     shapeColor: [255, 255, 255],
+    shapeRotationX: 35.0,
+    shapeRotationY: 0,
+    shapeRotationZ: 315.0,
     spin: true,
 };
 
@@ -69,6 +72,9 @@ general.add(state, 'quality', 1, 4, 1);
 general.add(state, 'floor');
 general.add(state, 'fogDist', 15, 100, 1);
 general.addColor(state, 'shapeColor');
+general.add(state, 'shapeRotationX', 0, 360);
+general.add(state, 'shapeRotationY', 0, 360);
+general.add(state, 'shapeRotationZ', 0, 360);
 general.add(state, 'spin');
 
 const rsCtrl = gui.addFolder('recursiveShapes');
@@ -113,6 +119,7 @@ function render(time: number) {
             state.recursiveShapes.rotation2Z,
         ],
         shapeColor: state.shapeColor.map(c => c / 255),
+        shapeRotation: [state.shapeRotationX, state.shapeRotationY, state.shapeRotationZ],
         spin: state.spin,
         time: time * 0.001,
     };
