@@ -30,12 +30,22 @@ const programs = {
     tetrahedron: twgl.createProgramInfo(gl, [basicVertShader, tetrahedronShader]),
 };
 
+const rsBaseShapes = [
+    'cube',
+    'mengerSponge',
+    'octahedral',
+    'octahedralFull',
+    'tetrahedron',
+    'tetrahedronFull',
+];
+
 const state = {
     currentProgram: 'recursiveShapes',
     floor: true,
     fogDist: 30,
     quality: 1,
     recursiveShapes: {
+        baseShape: 'tetrahedron',
         centerScaleX: 1,
         centerScaleY: 1,
         centerScaleZ: 1,
@@ -79,6 +89,7 @@ general.add(state, 'spin');
 
 const rsCtrl = gui.addFolder('recursiveShapes');
 rsCtrl.open();
+rsCtrl.add(state.recursiveShapes, 'baseShape', rsBaseShapes);
 rsCtrl.add(state.recursiveShapes, 'centerScaleX', 0.1, 1.0);
 rsCtrl.add(state.recursiveShapes, 'centerScaleY', 0.1, 1.0);
 rsCtrl.add(state.recursiveShapes, 'centerScaleZ', 0.1, 1.0);
@@ -103,6 +114,7 @@ function render(time: number) {
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
         quality: state.quality,
         resolution: [gl.canvas.width, gl.canvas.height],
+        rsBaseShape: rsBaseShapes.indexOf(state.recursiveShapes.baseShape),
         rsCenterScale: [
             state.recursiveShapes.centerScaleX,
             state.recursiveShapes.centerScaleY,
@@ -118,7 +130,7 @@ function render(time: number) {
             state.recursiveShapes.rotation2Y,
             state.recursiveShapes.rotation2Z,
         ],
-        shapeColor: state.shapeColor.map(c => c / 255),
+        shapeColor: state.shapeColor.map((c) => c / 255),
         shapeRotation: [state.shapeRotationX, state.shapeRotationY, state.shapeRotationZ],
         spin: state.spin,
         time: time * 0.001,

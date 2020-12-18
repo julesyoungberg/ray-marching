@@ -9,6 +9,7 @@ uniform float fogDist;
 uniform vec2 mousePosition;
 uniform float quality;
 uniform vec2 resolution;
+uniform int rsBaseShape;
 uniform vec3 rsCenterScale;
 uniform vec3 rsRotation1;
 uniform vec3 rsRotation2;
@@ -39,7 +40,7 @@ uniform float time;
 #define FLOOR_FADE_END 50.
 #define CAMERA_MOVEMENT_SPEED -20.
 #define CAMERA_INV_DISTANCE_MULTIPLIER 4.
-#define FLOOR_LEVEL -1.8
+#define FLOOR_LEVEL -2.0
 
 #define EPSILON 1e-5
 
@@ -50,6 +51,7 @@ uniform float time;
 @import ./util/calculateReflections;
 @import ./util/calculateShadow;
 @import ./util/castRay;
+@import ./util/folding;
 @import ./util/getUV;
 @import ./util/hash;
 @import ./util/marchRay;
@@ -80,7 +82,7 @@ void getRayData(const vec2 uv, const vec3 camPos, const vec3 lookAt,
                        vec3(uv, CAMERA_INV_DISTANCE_MULTIPLIER));
 }
 
-float sdTetrahedron(const vec3 pos, const float scale, const int iterations, const vec3 offset) {
+float sdShape(const vec3 pos, const float scale, const int iterations, const vec3 offset) {
     vec3 p = pos;
     float r = dot(p, p);
     mat4 rotation1 = createRotationMatrix(rsRotation1);
@@ -91,21 +93,38 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
     for (i = 0; i < iterations && r < 1000.0; i++) {
         p = rotateVec(p, rotation1);
 
-        if (p.x + p.y < 0.0) { 
-            p.xy = -p.yx;
-        }
-        if (p.x + p.z < 0.0) { 
-            p.xz = -p.zx;
-        }
-        if (p.y + p.z < 0.0) { 
-            p.yz = -p.zy;
+        switch(rsBaseShape) {
+        case 0:
+            p = foldCube(p);
+            break;
+        case 1:
+            p = foldOctahedralFull(p);
+            p.z -= 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
+            p.z = -abs(p.z);
+            p.z += 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
+            break;
+        case 2:
+            p = foldOctahedral(p);
+            break;
+        case 3:
+            p = foldOctahedralFull(p);
+            break;
+        case 5:
+            p = foldTetrahedronFull(p);
+            break;
+        default:
+            p = foldTetrahedron(p);
         }
 
         p = rotateVec(p, rotation2);
 
         p.x = scale * p.x - rsCenterScale.x * (scale - 1.0);
         p.y = scale * p.y - rsCenterScale.y * (scale - 1.0);
-        p.z = scale * p.z - rsCenterScale.z * (scale - 1.0);
+        if (rsBaseShape == 1) {
+            p.z *= scale;
+        } else {
+            p.z = scale * p.z - rsCenterScale.z * (scale - 1.0);
+        }
         r = dot(p, p);
     }
 
@@ -115,7 +134,7 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
 float shapeDist(in vec3 pos) {
     mat4 rot = createRotationMatrix(shapeRotation);
     vec3 p = (rot * vec4(pos, 1.)).xyz;
-    return sdTetrahedron(p, 2.0, 10, vec3(0, 1, 0));
+    return sdShape(p, 2.0, 10, vec3(0, 1, 0));
 }
 
 float distFromNearest(in vec3 p) {
