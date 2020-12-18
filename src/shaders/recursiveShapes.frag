@@ -9,6 +9,7 @@ uniform float fogDist;
 uniform vec2 mousePosition;
 uniform float quality;
 uniform vec2 resolution;
+uniform vec3 rsCenterScale;
 uniform vec3 rsRotation1;
 uniform vec3 rsRotation2;
 uniform vec3 shapeColor;
@@ -83,6 +84,7 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
     float r = dot(p, p);
     mat4 rotation1 = createRotationMatrix(rsRotation1);
     mat4 rotation2 = createRotationMatrix(rsRotation2);
+
     int i;
 
     for (i = 0; i < iterations && r < 1000.0; i++) {
@@ -100,9 +102,9 @@ float sdTetrahedron(const vec3 pos, const float scale, const int iterations, con
 
         p = rotateVec(p, rotation2);
 
-        p.x = scale * p.x - (scale - 1.0);
-        p.y = scale * p.y - (scale - 1.0);
-        p.z = scale * p.z - (scale - 1.0);
+        p.x = scale * p.x - rsCenterScale.x * (scale - 1.0);
+        p.y = scale * p.y - rsCenterScale.y * (scale - 1.0);
+        p.z = scale * p.z - rsCenterScale.z * (scale - 1.0);
         r = dot(p, p);
     }
 
@@ -148,7 +150,7 @@ void main() {
     float d = quality;
     float numSubPixels = pow(d, 2.0);
 
-    for(float i = 1.0; i <= numSubPixels; i += 1.0) {
+    for (float i = 1.0; i <= numSubPixels; i += 1.0) {
         float x = mod(i - 1.0, d);
         float y = mod(floor(i / d), d);
         vec2 jitter = hash(i) / d;

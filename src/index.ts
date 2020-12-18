@@ -36,8 +36,11 @@ const state = {
     fogDist: 30,
     quality: 1,
     recursiveShapes: {
-        rotation1X: 0,
-        rotation1Y: 70,
+        centerScaleX: 1,
+        centerScaleY: 1,
+        centerScaleZ: 1,
+        rotation1X: 90,
+        rotation1Y: 90,
         rotation1Z: 0,
         rotation2X: 30,
         rotation2Y: 0,
@@ -70,12 +73,15 @@ general.add(state, 'spin');
 
 const rsCtrl = gui.addFolder('recursiveShapes');
 rsCtrl.open();
-rsCtrl.add(state.recursiveShapes, 'rotation1X', 0, 180);
-rsCtrl.add(state.recursiveShapes, 'rotation1Y', 0, 180);
-rsCtrl.add(state.recursiveShapes, 'rotation1Z', 0, 180);
-rsCtrl.add(state.recursiveShapes, 'rotation2X', 0, 180);
-rsCtrl.add(state.recursiveShapes, 'rotation2Y', 0, 180);
-rsCtrl.add(state.recursiveShapes, 'rotation2Z', 0, 180);
+rsCtrl.add(state.recursiveShapes, 'centerScaleX', 0.1, 1.0);
+rsCtrl.add(state.recursiveShapes, 'centerScaleY', 0.1, 1.0);
+rsCtrl.add(state.recursiveShapes, 'centerScaleZ', 0.1, 1.0);
+rsCtrl.add(state.recursiveShapes, 'rotation1X', 0, 360);
+rsCtrl.add(state.recursiveShapes, 'rotation1Y', 0, 360);
+rsCtrl.add(state.recursiveShapes, 'rotation1Z', 0, 360);
+rsCtrl.add(state.recursiveShapes, 'rotation2X', 0, 360);
+rsCtrl.add(state.recursiveShapes, 'rotation2Y', 0, 360);
+rsCtrl.add(state.recursiveShapes, 'rotation2Z', 0, 360);
 
 const pointers = new Pointers(gl.canvas as HTMLCanvasElement);
 
@@ -91,6 +97,11 @@ function render(time: number) {
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
         quality: state.quality,
         resolution: [gl.canvas.width, gl.canvas.height],
+        rsCenterScale: [
+            state.recursiveShapes.centerScaleX,
+            state.recursiveShapes.centerScaleY,
+            state.recursiveShapes.centerScaleZ,
+        ],
         rsRotation1: [
             state.recursiveShapes.rotation1X,
             state.recursiveShapes.rotation1Y,

@@ -135,7 +135,7 @@ void main() {
     float d = 1.0;
     float numSubPixels = pow(d, 2.0);
 
-    for(float i = 1.0; i <= numSubPixels; i += 1.0) {
+    for (float i = 1.0; i <= numSubPixels; i += 1.0) {
         float x = mod(i - 1.0, d);
         float y = mod(floor(i / d), d);
         vec2 jitter = hash(i) / d;
