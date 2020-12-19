@@ -8,6 +8,7 @@ import createUnitQuad2D from './util/createUnitQuad2D';
 const basicVertShader = require('./shaders/basic.vert');
 // const opticalShader = require('./shaders/optical.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
+const mandelbulbShader = require('./shaders/mandelbulb.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const recursiveShapesShader = require('./shaders/recursiveShapes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
@@ -21,6 +22,7 @@ const bufferInfo = createUnitQuad2D(gl);
 const programs = {
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
     // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
+    mandelbulb: twgl.createProgramInfo(gl, [basicVertShader, mandelbulbShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     recursiveShapes: twgl.createProgramInfo(gl, [basicVertShader, recursiveShapesShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
@@ -40,7 +42,7 @@ const rsBaseShapes = [
 ];
 
 const state = {
-    currentProgram: 'recursiveShapes',
+    currentProgram: 'mandelbulb',
     floor: true,
     fogDist: 30,
     quality: 1,
@@ -77,7 +79,6 @@ const gui = new dat.GUI();
 gui.add(state, 'currentProgram', Object.keys(programs));
 
 const general = gui.addFolder('general');
-general.open();
 general.add(state, 'quality', 1, 4, 1);
 general.add(state, 'floor');
 general.add(state, 'fogDist', 15, 100, 1);
@@ -88,7 +89,6 @@ general.add(state, 'shapeRotationZ', 0, 360);
 general.add(state, 'spin');
 
 const rsCtrl = gui.addFolder('recursiveShapes');
-rsCtrl.open();
 rsCtrl.add(state.recursiveShapes, 'baseShape', rsBaseShapes);
 rsCtrl.add(state.recursiveShapes, 'centerScaleX', 0.1, 1.0);
 rsCtrl.add(state.recursiveShapes, 'centerScaleY', 0.1, 1.0);
