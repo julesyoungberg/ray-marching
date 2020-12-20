@@ -40,6 +40,12 @@ const rsBaseShapes = [
 ];
 
 const state = {
+    colorMode: 'solid',
+    colorPalette: {
+        paletteColor1: [231, 237, 235],
+        paletteColor2: [0, 58, 107],
+        paletteColor3: [66, 195, 247],
+    },
     currentProgram: 'mandelbulb',
     floor: true,
     fogDist: 30,
@@ -80,11 +86,17 @@ const general = gui.addFolder('general');
 general.add(state, 'quality', 1, 4, 1);
 general.add(state, 'floor');
 general.add(state, 'fogDist', 15, 100, 1);
-general.addColor(state, 'shapeColor');
 general.add(state, 'shapeRotationX', 0, 360);
 general.add(state, 'shapeRotationY', 0, 360);
 general.add(state, 'shapeRotationZ', 0, 360);
 general.add(state, 'spin');
+
+const color = gui.addFolder('color');
+color.add(state, 'colorMode', ['palette', 'solid']);
+color.addColor(state, 'shapeColor');
+color.addColor(state.colorPalette, 'paletteColor1');
+color.addColor(state.colorPalette, 'paletteColor2');
+color.addColor(state.colorPalette, 'paletteColor3');
 
 const rsCtrl = gui.addFolder('recursiveShapes');
 rsCtrl.add(state.recursiveShapes, 'baseShape', rsBaseShapes);
@@ -106,10 +118,14 @@ function render(time: number) {
 
     const p = pointers.pointers;
     const uniforms = {
+        colorMode: state.colorMode === 'solid' ? 0 : 1,
         drawFloor: state.floor,
         fogDist: state.fogDist,
         mousePosition: [p[0].x * 2 - 1, p[0].y * 2 - 1],
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
+        paletteColor1: state.colorPalette.paletteColor1.map(c => c / 255),
+        paletteColor2: state.colorPalette.paletteColor2.map(c => c / 255),
+        paletteColor3: state.colorPalette.paletteColor3.map(c => c / 255),
         quality: state.quality,
         resolution: [gl.canvas.width, gl.canvas.height],
         rsBaseShape: rsBaseShapes.indexOf(state.recursiveShapes.baseShape),

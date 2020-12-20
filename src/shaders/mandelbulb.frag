@@ -4,9 +4,13 @@ precision highp float;
 in vec2 uv;
 out vec4 fragColor;
 
+uniform int colorMode;
 uniform bool drawFloor;
 uniform float fogDist;
 uniform vec2 mousePosition;
+uniform vec3 paletteColor1;
+uniform vec3 paletteColor2;
+uniform vec3 paletteColor3;
 uniform float quality;
 uniform vec2 resolution;
 uniform vec3 shapeColor;
@@ -42,7 +46,6 @@ uniform float time;
 @import ./util/calculateFloorDist;
 @import ./util/calculateNormal;
 @import ./util/calculatePhong;
-@import ./util/calculateReflections;
 @import ./util/calculateShadow;
 @import ./util/castRay;
 @import ./util/folding;
@@ -64,27 +67,32 @@ float sdMandelbulb(const vec3 pos, const int iterations,
     }
 
     vec3 z = pos;
-	float dr = 1.0;
-	float r = 0.0;
-	for (int i = 0; i < iterations; i++) {
-		r = length(z);
-		if (r > bailout) {
+    float dr = 1.0;
+    float r = 0.0;
+
+    orbitTrap = vec3(1e20);
+
+    for (int i = 0; i < iterations; i++) {
+        r = length(z);
+        if (r > bailout) {
             break;
         }
-		
-		// convert to polar coordinates
-		float theta = acos(z.z / r);
-		float phi = atan(z.y, z.x);
-		dr = pow(r, power - 1.0) * power * dr + 1.0;
-		
-		// scale and rotate the point
-		float zr = pow(r, power);
-		theta = theta * power;
-		phi = phi * power;
-		
-		// convert back to cartesian coordinates
-		z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
-		z += pos;
+
+        z = rotateVec(z, createRotationMatrix(vec3(90, 0, 0)));
+
+        // convert to polar coordinates
+        float theta = acos(z.z / r);
+        float phi = atan(z.y, z.x);
+        dr = pow(r, power - 1.0) * power * dr + 1.0;
+
+        // scale and rotate the point
+        float zr = pow(r, power);
+        theta = theta * power;
+        phi = phi * power;
+
+        // convert back to cartesian coordinates
+        z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
+        z += pos;
 
         orbitTrap.x = min(pow(abs(z.z), 0.1), orbitTrap.x);
         orbitTrap.y = min(abs(z.x) - 0.15, orbitTrap.y);
@@ -127,8 +135,15 @@ float rayMarch(vec3 ro, vec3 rd, out vec3 trap) {
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
-    vec3 lightDir = normalize(LIGHT_POS - position);
     vec3 color = shapeColor;
+
+    // if (colorMode == 1) {
+    //     color *= 0.6;
+    //     color = paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
+    //     color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
+    //     color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
+    // }
+
     color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
     color *= calculateShadow(position, normal, LIGHT_POS);
     return color;
@@ -184,11 +199,21 @@ void main() {
         } else {
             surfacePos = rayOrigin + rayDir * dist;
             surfaceNorm = calculateNormal(surfacePos);
-            color = calculateColor(surfacePos, surfaceNorm, rayOrigin);
+            color = shapeColor;
+
+            if (colorMode == 1) {
+                color *= 0.6;
+                color += paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
+                color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
+                color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
+            }
+
+            color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
+            color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
         }
         
         color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
-        color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
+        // color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);
