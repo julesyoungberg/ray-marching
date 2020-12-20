@@ -42,9 +42,9 @@ const rsBaseShapes = [
 const state = {
     colorMode: 'palette',
     colorPalette: {
-        paletteColor1: [255, 0, 0],
+        paletteColor1: [255, 0, 135],
         paletteColor2: [0, 58, 107],
-        paletteColor3: [66, 195, 247],
+        paletteColor3: [0, 197, 255],
     },
     currentProgram: 'mandelbulb',
     floor: true,

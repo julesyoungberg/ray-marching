@@ -134,8 +134,8 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 tr
         color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
     }
 
-    color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
-    color *= calculateShadow(position, normal, LIGHT_POS);
+    color = calculatePhong(position, normal, eyePos, eyePos + vec3(2.0, 1.0, -1.0), color);
+    color *= calculateShadow(position, normal, eyePos + vec3(2.0, 1.0, -1.0));
     return color;
 }
 
@@ -169,6 +169,7 @@ void main() {
 
         vec3 trap;
         float dist = marchRayWithTrap(rayOrigin, rayDir, 0.0, trap);
+        vec3 lightPos = rayOrigin + vec3(2.0, 1.0, -1.0);
         vec3 color = vec3(1.0);
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
@@ -180,8 +181,8 @@ void main() {
                     surfacePos = rayOrigin + rayDir * dist;
                     surfaceNorm = vec3(0, 1, 0);
                     color = vec3(1.0);
-                    color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
-                    color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+                    color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, lightPos, color);
+                    color *= calculateShadow(surfacePos, surfaceNorm, lightPos);
                     color = calculateReflectionsWithTrap(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
                 }
             } else {
