@@ -4,7 +4,7 @@ float rayMarch(in vec3 ro, in vec3 rd, in float minHitDist, in float maxDist,
                in int numSteps, in bool internal) {
     float totalDistancetraveled = 0.0;
 
-    for (int i = 0; i < NUM_STEPS; i++) {
+    for (int i = 0; i < numSteps; i++) {
         vec3 currentPosition = ro + totalDistancetraveled * rd;
         float dist = distFromNearest(currentPosition);
         if (internal) {

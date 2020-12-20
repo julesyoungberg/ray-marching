@@ -23,6 +23,7 @@ uniform float time;
 // ray marching
 #define FRAME_OF_VIEW 1.0
 #define MAX_RAY_LENGTH 200.0
+#define MAX_TRACE_DISTANCE 200.0
 #define MIN_HIT_DISTANCE 0.0003
 #define NUM_STEPS 100
 #define RAY_PUSH 0.02
@@ -48,6 +49,7 @@ uniform float time;
 @import ./util/calculateFloorDist;
 @import ./util/calculateNormal;
 @import ./util/calculatePhong;
+@import ./util/calculateReflectionsWithTrap;
 @import ./util/calculateShadow;
 @import ./util/castRay;
 @import ./util/folding;
@@ -55,11 +57,13 @@ uniform float time;
 @import ./util/getUV;
 @import ./util/hash;
 @import ./util/marchRay;
+@import ./util/marchRayWithTrap;
+@import ./util/rayMarchWithTrap;
 @import ./util/rotate;
 
 vec3 getBackgroundColor(const vec2 st) {
     return vec3(0) * smoothstep(1.0, 0.0, abs(0.5 - st.y));
-} 
+}
 
 float sdMandelbulb(const vec3 pos, const int iterations, 
                    const float bailout, out vec3 orbitTrap) {
@@ -111,41 +115,24 @@ float shapeDist(in vec3 pos, out vec3 orbitTrap) {
     return sdMandelbulb(p, 20, 2.0, orbitTrap);
 }
 
+float distFromNearest(in vec3 p, out vec3 trap) {
+    return shapeDist(p, trap);
+}
+
 float distFromNearest(in vec3 p) {
-    vec3 orbitTrap;
-    return shapeDist(p, orbitTrap);
+    vec3 dummyTrap;
+    return shapeDist(p, dummyTrap);
 }
 
-float rayMarch(vec3 ro, vec3 rd, out vec3 trap) {
-    float t = 0.0;
-
-    for (int i = 0; i < NUM_STEPS; ++i) {
-        vec3 pos = ro + t * rd;
-        float h = shapeDist(pos, trap);
-
-        if (h < MIN_HIT_DISTANCE) {
-            break;
-        }
-
-        t += h;
-
-        if (t > MAX_RAY_LENGTH) {
-            t = -1.0;
-            break;
-        }
-    }
-    return t;
-}
-
-vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
+vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 trap) {
     vec3 color = shapeColor;
 
-    // if (colorMode == 1) {
-    //     color *= 0.6;
-    //     color = paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
-    //     color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
-    //     color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
-    // }
+    if (colorMode == 1) {
+        color *= 0.6;
+        color = paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
+        color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
+        color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
+    }
 
     color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
     color *= calculateShadow(position, normal, LIGHT_POS);
@@ -181,7 +168,7 @@ void main() {
         backgroundColor = getBackgroundColor(uv);
 
         vec3 trap;
-        float dist = rayMarch(rayOrigin, rayDir, trap);
+        float dist = marchRayWithTrap(rayOrigin, rayDir, 0.0, trap);
         vec3 color = vec3(1.0);
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
@@ -195,6 +182,7 @@ void main() {
                     color = vec3(1.0);
                     color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
                     color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+                    color = calculateReflectionsWithTrap(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
                 }
             } else {
                 dist = fogDist;
@@ -202,21 +190,10 @@ void main() {
         } else {
             surfacePos = rayOrigin + rayDir * dist;
             surfaceNorm = calculateNormal(surfacePos);
-            color = shapeColor;
-
-            if (colorMode == 1) {
-                color *= 0.6;
-                color += paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
-                color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
-                color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
-            }
-
-            color = calculatePhong(surfacePos, surfaceNorm, rayOrigin, LIGHT_POS, color);
-            color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+            color = calculateColor(surfacePos, surfaceNorm, rayOrigin, trap);
         }
         
         color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
-        // color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);

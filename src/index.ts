@@ -40,9 +40,9 @@ const rsBaseShapes = [
 ];
 
 const state = {
-    colorMode: 'solid',
+    colorMode: 'palette',
     colorPalette: {
-        paletteColor1: [231, 237, 235],
+        paletteColor1: [255, 0, 0],
         paletteColor2: [0, 58, 107],
         paletteColor3: [66, 195, 247],
     },
@@ -105,7 +105,6 @@ color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
 
 const muCtrl = gui.addFolder('mandelbulb');
-muCtrl.open();
 muCtrl.add(state.mandelbulb, 'power', 2, 20);
 muCtrl.add(state.mandelbulb, 'rotationX', 0, 360);
 muCtrl.add(state.mandelbulb, 'rotationY', 0, 360);
