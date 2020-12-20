@@ -48,8 +48,9 @@ const state = {
     },
     currentProgram: 'mandelbulb',
     floor: true,
-    fogDist: 30,
+    fogDist: 50,
     mandelbulb: {
+        animatePower: false,
         power: 8.0,
         rotationX: 0,
         rotationY: 0,
@@ -105,6 +106,7 @@ color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
 
 const muCtrl = gui.addFolder('mandelbulb');
+muCtrl.add(state.mandelbulb, 'animatePower');
 muCtrl.add(state.mandelbulb, 'power', 2, 20);
 muCtrl.add(state.mandelbulb, 'rotationX', 0, 360);
 muCtrl.add(state.mandelbulb, 'rotationY', 0, 360);
@@ -135,6 +137,7 @@ function render(time: number) {
         fogDist: state.fogDist,
         mousePosition: [p[0].x * 2 - 1, p[0].y * 2 - 1],
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
+        muAnimatePower: state.mandelbulb.animatePower,
         muPower: state.mandelbulb.power,
         muRotation: [
             state.mandelbulb.rotationX,

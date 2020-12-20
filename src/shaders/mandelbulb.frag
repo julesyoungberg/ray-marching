@@ -8,6 +8,7 @@ uniform int colorMode;
 uniform bool drawFloor;
 uniform float fogDist;
 uniform vec2 mousePosition;
+uniform bool muAnimatePower;
 uniform float muPower;
 uniform vec3 muRotation;
 uniform vec3 paletteColor1;
@@ -29,7 +30,7 @@ uniform float time;
 #define RAY_PUSH 0.02
 
 // shading
-#define LIGHT_POS vec3(2.0, 10.0, 8.0)
+#define LIGHT_POS vec3(5.0, 10.0, 5.0)
 #define REFLECTIVITY 0.3
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
@@ -79,6 +80,11 @@ float sdMandelbulb(const vec3 pos, const int iterations,
     orbitTrap = vec3(1e20);
     mat4 rotationMatrix = createRotationMatrix(muRotation);
 
+    float power = muPower;
+    if (muAnimatePower) {
+        power = (sin(time * 0.2) * 0.5 + 0.5) * 8.0 + 2.0;
+    }
+
     for (int i = 0; i < iterations; i++) {
         r = length(z);
         if (r > bailout) {
@@ -90,12 +96,12 @@ float sdMandelbulb(const vec3 pos, const int iterations,
         // convert to polar coordinates
         float theta = acos(z.z / r);
         float phi = atan(z.y, z.x);
-        dr = pow(r, muPower - 1.0) * muPower * dr + 1.0;
+        dr = pow(r, power - 1.0) * power * dr + 1.0;
 
         // scale and rotate the point
-        float zr = pow(r, muPower);
-        theta = theta * muPower;
-        phi = phi * muPower;
+        float zr = pow(r, power);
+        theta = theta * power;
+        phi = phi * power;
 
         // convert back to cartesian coordinates
         z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
@@ -134,6 +140,7 @@ vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 tr
         color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
     }
 
+    vec3 lightPos = LIGHT_POS; // eyePos + normalize(position - eyePos) + vec3(0, 1, 0);
     color = calculatePhong(position, normal, eyePos, eyePos + vec3(2.0, 1.0, -1.0), color);
     color *= calculateShadow(position, normal, eyePos + vec3(2.0, 1.0, -1.0));
     return color;
@@ -169,7 +176,7 @@ void main() {
 
         vec3 trap;
         float dist = marchRayWithTrap(rayOrigin, rayDir, 0.0, trap);
-        vec3 lightPos = rayOrigin + vec3(2.0, 1.0, -1.0);
+        vec3 lightPos = LIGHT_POS; // rayOrigin + rayDir + vec3(0, 1, 0);
         vec3 color = vec3(1.0);
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
