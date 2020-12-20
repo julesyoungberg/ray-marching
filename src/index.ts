@@ -49,6 +49,12 @@ const state = {
     currentProgram: 'mandelbulb',
     floor: true,
     fogDist: 30,
+    mandelbulb: {
+        power: 8.0,
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+    },
     quality: 1,
     recursiveShapes: {
         baseShape: 'tetrahedron',
@@ -98,6 +104,13 @@ color.addColor(state.colorPalette, 'paletteColor1');
 color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
 
+const muCtrl = gui.addFolder('mandelbulb');
+muCtrl.open();
+muCtrl.add(state.mandelbulb, 'power', 2, 20);
+muCtrl.add(state.mandelbulb, 'rotationX', 0, 360);
+muCtrl.add(state.mandelbulb, 'rotationY', 0, 360);
+muCtrl.add(state.mandelbulb, 'rotationZ', 0, 360);
+
 const rsCtrl = gui.addFolder('recursiveShapes');
 rsCtrl.add(state.recursiveShapes, 'baseShape', rsBaseShapes);
 rsCtrl.add(state.recursiveShapes, 'centerScaleX', 0.1, 1.0);
@@ -123,6 +136,12 @@ function render(time: number) {
         fogDist: state.fogDist,
         mousePosition: [p[0].x * 2 - 1, p[0].y * 2 - 1],
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
+        muPower: state.mandelbulb.power,
+        muRotation: [
+            state.mandelbulb.rotationX,
+            state.mandelbulb.rotationY,
+            state.mandelbulb.rotationZ,
+        ],
         paletteColor1: state.colorPalette.paletteColor1.map(c => c / 255),
         paletteColor2: state.colorPalette.paletteColor2.map(c => c / 255),
         paletteColor3: state.colorPalette.paletteColor3.map(c => c / 255),

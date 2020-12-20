@@ -8,6 +8,8 @@ uniform int colorMode;
 uniform bool drawFloor;
 uniform float fogDist;
 uniform vec2 mousePosition;
+uniform float muPower;
+uniform vec3 muRotation;
 uniform vec3 paletteColor1;
 uniform vec3 paletteColor2;
 uniform vec3 paletteColor3;
@@ -60,7 +62,7 @@ vec3 getBackgroundColor(const vec2 st) {
 } 
 
 float sdMandelbulb(const vec3 pos, const int iterations, 
-                   const float bailout, const float power, out vec3 orbitTrap) {
+                   const float bailout, out vec3 orbitTrap) {
     float thresh = length(pos) - 1.2;
     if (thresh > 0.2) {
         return thresh;
@@ -71,6 +73,7 @@ float sdMandelbulb(const vec3 pos, const int iterations,
     float r = 0.0;
 
     orbitTrap = vec3(1e20);
+    mat4 rotationMatrix = createRotationMatrix(muRotation);
 
     for (int i = 0; i < iterations; i++) {
         r = length(z);
@@ -78,17 +81,17 @@ float sdMandelbulb(const vec3 pos, const int iterations,
             break;
         }
 
-        z = rotateVec(z, createRotationMatrix(vec3(90, 0, 0)));
+        z = rotateVec(z, rotationMatrix);
 
         // convert to polar coordinates
         float theta = acos(z.z / r);
         float phi = atan(z.y, z.x);
-        dr = pow(r, power - 1.0) * power * dr + 1.0;
+        dr = pow(r, muPower - 1.0) * muPower * dr + 1.0;
 
         // scale and rotate the point
-        float zr = pow(r, power);
-        theta = theta * power;
-        phi = phi * power;
+        float zr = pow(r, muPower);
+        theta = theta * muPower;
+        phi = phi * muPower;
 
         // convert back to cartesian coordinates
         z = zr * vec3(sin(theta) * cos(phi), sin(phi) * sin(theta), cos(theta));
@@ -105,7 +108,7 @@ float sdMandelbulb(const vec3 pos, const int iterations,
 float shapeDist(in vec3 pos, out vec3 orbitTrap) {
     mat4 rot = createRotationMatrix(shapeRotation);
     vec3 p = (rot * vec4(pos, 1.)).xyz;
-    return sdMandelbulb(p, 20, 2.0, 8.0, orbitTrap);
+    return sdMandelbulb(p, 20, 2.0, orbitTrap);
 }
 
 float distFromNearest(in vec3 p) {
