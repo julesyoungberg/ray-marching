@@ -4,9 +4,13 @@ precision highp float;
 in vec2 uv;
 out vec4 fragColor;
 
+uniform int colorMode;
 uniform bool drawFloor;
 uniform float fogDist;
 uniform vec2 mousePosition;
+uniform vec3 paletteColor1;
+uniform vec3 paletteColor2;
+uniform vec3 paletteColor3;
 uniform float quality;
 uniform vec2 resolution;
 uniform int rsBaseShape;
@@ -46,52 +50,53 @@ uniform float time;
 @import ./util/calculateFloorDist;
 @import ./util/calculateNormal;
 @import ./util/calculatePhong;
-@import ./util/calculateReflections;
+@import ./util/calculateReflectionsWithTrap;
 @import ./util/calculateShadow;
 @import ./util/castRay;
 @import ./util/folding;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
-@import ./util/marchRay;
+@import ./util/marchRayWithTrap;
 @import ./util/rotate;
 
 vec3 getBackgroundColor(const vec2 st) {
     return vec3(0) * smoothstep(1.0, 0.0, abs(0.5 - st.y));
 }
 
-float sdShape(const vec3 pos, const float scale, const int iterations, const vec3 offset) {
+float sdShape(const vec3 pos, const float scale, const int iterations, const vec3 offset, out vec3 orbitTrap) {
     vec3 p = pos;
     float r = dot(p, p);
     mat4 rotation1 = createRotationMatrix(rsRotation1);
     mat4 rotation2 = createRotationMatrix(rsRotation2);
+    
+    orbitTrap = vec3(1e20);
 
     int i;
-
     for (i = 0; i < iterations && r < 1000.0; i++) {
         p = rotateVec(p, rotation1);
 
         switch(rsBaseShape) {
-        case 0:
-            p = foldCube(p);
-            break;
-        case 1:
-            p = foldOctahedralFull(p);
-            p.z -= 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
-            p.z = -abs(p.z);
-            p.z += 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
-            break;
-        case 2:
-            p = foldOctahedral(p);
-            break;
-        case 3:
-            p = foldOctahedralFull(p);
-            break;
-        case 5:
-            p = foldTetrahedronFull(p);
-            break;
-        default:
-            p = foldTetrahedron(p);
+            case 0:
+                p = foldCube(p);
+                break;
+            case 1:
+                p = foldOctahedralFull(p);
+                p.z -= 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
+                p.z = -abs(p.z);
+                p.z += 0.5 * rsCenterScale.z * (scale - 1.0) / scale;
+                break;
+            case 2:
+                p = foldOctahedral(p);
+                break;
+            case 3:
+                p = foldOctahedralFull(p);
+                break;
+            case 5:
+                p = foldTetrahedronFull(p);
+                break;
+            default:
+                p = foldTetrahedron(p);
         }
 
         p = rotateVec(p, rotation2);
@@ -103,25 +108,42 @@ float sdShape(const vec3 pos, const float scale, const int iterations, const vec
         } else {
             p.z = scale * p.z - rsCenterScale.z * (scale - 1.0);
         }
+
         r = dot(p, p);
+
+        orbitTrap.x = min(pow(abs(p.z), 0.1), orbitTrap.x);
+        orbitTrap.y = min(abs(p.x) - 0.15, orbitTrap.y);
+        orbitTrap.z = min(r, orbitTrap.z);
     }
 
     return (sqrt(r) - 2.0) * pow(scale, -float(i));
 }
 
-float shapeDist(in vec3 pos) {
+float shapeDist(in vec3 pos, out vec3 orbitTrap) {
     mat4 rot = createRotationMatrix(shapeRotation);
     vec3 p = (rot * vec4(pos, 1.)).xyz;
-    return sdShape(p, 2.0, 10, vec3(0, 1, 0));
+    return sdShape(p, 2.0, 10, vec3(0, 1, 0), orbitTrap);
+}
+
+float distFromNearest(in vec3 p, out vec3 trap) {
+    return shapeDist(p, trap);
 }
 
 float distFromNearest(in vec3 p) {
-    return shapeDist(p); //opTwist(p, 0.01));
+    vec3 dummyTrap;
+    return distFromNearest(p, dummyTrap);
 }
 
-vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos) {
+vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 trap) {
     vec3 lightDir = normalize(LIGHT_POS - position);
     vec3 color = shapeColor;
+
+    if (colorMode == 1) {
+        color = paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
+        color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
+        color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
+    }
+
     color = calculatePhong(position, normal, eyePos, LIGHT_POS, color);
     color *= calculateShadow(position, normal, LIGHT_POS);
     return color;
@@ -139,6 +161,7 @@ void main() {
     vec3 rayDir;
     float d = quality;
     float numSubPixels = pow(d, 2.0);
+    vec3 trap;
 
     for (float i = 1.0; i <= numSubPixels; i += 1.0) {
         float x = mod(i - 1.0, d);
@@ -155,7 +178,7 @@ void main() {
         }
         backgroundColor = getBackgroundColor(uv);
 
-        float dist = marchRay(rayOrigin, rayDir, 0.0);
+        float dist = marchRayWithTrap(rayOrigin, rayDir, 0.0, trap);
         vec3 color = vec3(1.0);
         bool isFloor = false;
         vec3 surfacePos, surfaceNorm;
@@ -176,11 +199,11 @@ void main() {
         } else {
             surfacePos = rayOrigin + rayDir * dist;
             surfaceNorm = calculateNormal(surfacePos);
-            color = calculateColor(surfacePos, surfaceNorm, rayOrigin);
+            color = calculateColor(surfacePos, surfaceNorm, rayOrigin, trap);
         }
         
         color *= calculateAmbientOcclusion(surfacePos, surfaceNorm);
-        color = calculateReflections(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
+        color = calculateReflectionsWithTrap(surfacePos, surfaceNorm, color, rayOrigin, vec3(0.0));
 
         float backgroundBlend = smoothstep(FLOOR_FADE_START, FLOOR_FADE_END, dist);
         color = mix(color, backgroundColor, backgroundBlend);

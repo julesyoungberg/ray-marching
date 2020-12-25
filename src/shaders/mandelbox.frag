@@ -110,7 +110,7 @@ float distFromNearest(in vec3 p, out vec3 trap) {
 
 float distFromNearest(in vec3 p) {
     vec3 dummyTrap;
-    return shapeDist(p, dummyTrap);
+    return distFromNearest(p, dummyTrap);
 }
 
 vec3 calculateColor(in vec3 position, in vec3 normal, in vec3 eyePos, in vec3 trap) {

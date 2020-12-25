@@ -48,7 +48,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'mandelbulb',
+    currentProgram: 'recursiveShapes',
     floor: true,
     fogDist: 50,
     mandelbox: {
