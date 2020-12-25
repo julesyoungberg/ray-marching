@@ -6,7 +6,7 @@ vec2 hash(float p);
 vec3 getSmoothSurfaceColor(in vec2 coord, in vec2 res, in vec3 camPos,
                            in vec3 lookAt, in float zoom, in vec3 bg,
                            in int gridRes) {
-    vec2 currentUV = getUV(gl_FragCoord.xy, resolution);
+    vec2 currentUV = getUV(coord, resolution);
     vec3 rayDir = castRay(currentUV, camPos, lookAt, zoom);
     vec3 finalColor = bg;
     float d = float(gridRes);

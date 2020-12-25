@@ -16,7 +16,7 @@ float rayMarchWithTrap(in vec3 ro, in vec3 rd, in float minHitDist,
             return totalDistancetraveled;
         }
 
-        totalDistancetraveled += dist * 0.98;
+        totalDistancetraveled += dist;
     }
 
     return -1.0;

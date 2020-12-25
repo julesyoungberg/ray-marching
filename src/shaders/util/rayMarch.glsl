@@ -19,7 +19,7 @@ float rayMarch(in vec3 ro, in vec3 rd, in float minHitDist, in float maxDist,
             return totalDistancetraveled;
         }
 
-        totalDistancetraveled += dist * 0.98;
+        totalDistancetraveled += dist;
     }
 
     return -1.0;

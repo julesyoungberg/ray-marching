@@ -8,6 +8,7 @@ import createUnitQuad2D from './util/createUnitQuad2D';
 const basicVertShader = require('./shaders/basic.vert');
 // const opticalShader = require('./shaders/optical.frag');
 const basicCubesShader = require('./shaders/basicCubes.frag');
+const mandelboxShader = require('./shaders/mandelbox.frag');
 const mandelbulbShader = require('./shaders/mandelbulb.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const recursiveShapesShader = require('./shaders/recursiveShapes.frag');
@@ -21,6 +22,7 @@ const bufferInfo = createUnitQuad2D(gl);
 const programs = {
     basicCubes: twgl.createProgramInfo(gl, [basicVertShader, basicCubesShader]),
     // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
+    mandelbox: twgl.createProgramInfo(gl, [basicVertShader, mandelboxShader]),
     mandelbulb: twgl.createProgramInfo(gl, [basicVertShader, mandelbulbShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     recursiveShapes: twgl.createProgramInfo(gl, [basicVertShader, recursiveShapesShader]),
@@ -46,9 +48,14 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'mandelbulb',
+    currentProgram: 'mandelbox',
     floor: true,
     fogDist: 50,
+    mandelbox: {
+        rotationX: 0,
+        rotationY: 0,
+        rotationZ: 0,
+    },
     mandelbulb: {
         animatePower: false,
         power: 8.0,
@@ -62,10 +69,10 @@ const state = {
         centerScaleX: 1,
         centerScaleY: 1,
         centerScaleZ: 1,
-        rotation1X: 90,
-        rotation1Y: 90,
+        rotation1X: 0,
+        rotation1Y: 0,
         rotation1Z: 0,
-        rotation2X: 30,
+        rotation2X: 0,
         rotation2Y: 0,
         rotation2Z: 0,
     },
@@ -92,7 +99,7 @@ gui.add(state, 'currentProgram', Object.keys(programs));
 const general = gui.addFolder('general');
 general.add(state, 'quality', 1, 4, 1);
 general.add(state, 'floor');
-general.add(state, 'fogDist', 15, 100, 1);
+general.add(state, 'fogDist', 15, 200, 1);
 general.add(state, 'shapeRotationX', 0, 360);
 general.add(state, 'shapeRotationY', 0, 360);
 general.add(state, 'shapeRotationZ', 0, 360);
@@ -104,6 +111,11 @@ color.addColor(state, 'shapeColor');
 color.addColor(state.colorPalette, 'paletteColor1');
 color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
+
+const moCtrl = gui.addFolder('mandelbox');
+moCtrl.add(state.mandelbox, 'rotationX', 0, 360);
+moCtrl.add(state.mandelbox, 'rotationY', 0, 360);
+moCtrl.add(state.mandelbox, 'rotationZ', 0, 360);
 
 const muCtrl = gui.addFolder('mandelbulb');
 muCtrl.add(state.mandelbulb, 'animatePower');
@@ -135,6 +147,11 @@ function render(time: number) {
         colorMode: state.colorMode === 'solid' ? 0 : 1,
         drawFloor: state.floor,
         fogDist: state.fogDist,
+        moRotation: [
+            state.mandelbox.rotationX,
+            state.mandelbox.rotationY,
+            state.mandelbox.rotationZ,
+        ],
         mousePosition: [p[0].x * 2 - 1, p[0].y * 2 - 1],
         mouseVelocity: [p[0].deltaX * 2, p[0].deltaY * 2],
         muAnimatePower: state.mandelbulb.animatePower,
