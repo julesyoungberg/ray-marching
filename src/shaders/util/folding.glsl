@@ -59,3 +59,10 @@ vec3 foldOctahedralFull(const vec3 pos) {
     }
     return p;
 }
+
+vec3 foldBox(const vec3 z) { return clamp(z, -1.0, 1.0) * 2.0 - z; }
+
+vec4 foldSphere(const vec4 z, const float dotProduct, const float radius) {
+    float k = clamp(max(radius / dotProduct, radius), 0.0, 1.0);
+    return z * k;
+}

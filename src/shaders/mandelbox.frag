@@ -23,9 +23,9 @@ uniform float time;
 #define FRAME_OF_VIEW 1.0
 #define MAX_RAY_LENGTH 50.0
 #define MAX_TRACE_DISTANCE 50.0
-#define MIN_HIT_DISTANCE 0.0003
+#define MIN_HIT_DISTANCE 0.03
 #define NUM_STEPS 512
-#define RAY_PUSH 0.02
+#define RAY_PUSH 0.05
 
 // shading
 #define LIGHT_POS vec3(20.0, 10.0, 20.0)
@@ -72,6 +72,7 @@ float sdMandelbox(const vec3 pos, const int iterations, out vec3 orbitTrap) {
     float radius = 0.25;
     float R1 = abs(scale - 1.0);
     float R2 = pow(abs(scale), float(1 - iterations));
+    vec4 temp;
 
     orbitTrap = vec3(1e20);
 
@@ -79,13 +80,12 @@ float sdMandelbox(const vec3 pos, const int iterations, out vec3 orbitTrap) {
 
     for (int i = 0; i < iterations; i++) {
         z = rotateVec(z, rotationMatrix);
-
-        z = clamp(z, -1.0, 1.0) * 2.0 - z;
-        
+        z = foldBox(z);
         float r2 = dot(z, z);
-        float k = clamp(max(radius / r2, radius), 0.0, 1.0);
-        z *= k;
-        dr *= k;
+
+        temp = foldSphere(vec4(z, dr), r2, radius);
+        z = temp.xyz;
+        dr = temp.w;
 
         z = z * scale / radius + offset;
         dr = dr * abs(scale) / radius + 1.0;
