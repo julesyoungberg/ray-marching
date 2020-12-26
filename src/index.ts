@@ -11,6 +11,7 @@ const basicCubesShader = require('./shaders/basicCubes.frag');
 const mandelboxShader = require('./shaders/mandelbox.frag');
 const mandelbulbShader = require('./shaders/mandelbulb.frag');
 const kleinianShader = require('./shaders/kleinian.frag');
+const kleinianMengerShader = require('./shaders/kleinianMenger.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const recursiveShapesShader = require('./shaders/recursiveShapes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
@@ -26,6 +27,7 @@ const programs = {
     mandelbox: twgl.createProgramInfo(gl, [basicVertShader, mandelboxShader]),
     mandelbulb: twgl.createProgramInfo(gl, [basicVertShader, mandelbulbShader]),
     kleinian: twgl.createProgramInfo(gl, [basicVertShader, kleinianShader]),
+    kleinianMenger: twgl.createProgramInfo(gl, [basicVertShader, kleinianMengerShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     recursiveShapes: twgl.createProgramInfo(gl, [basicVertShader, recursiveShapesShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
@@ -50,7 +52,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'kleinian',
+    currentProgram: 'kleinianMenger',
     floor: true,
     fogDist: 50,
     kleinian: {
@@ -73,7 +75,7 @@ const state = {
     },
     quality: 1,
     recursiveShapes: {
-        baseShape: 'tetrahedron',
+        baseShape: 'kleinian',
         centerScaleX: 1,
         centerScaleY: 1,
         centerScaleZ: 1,
