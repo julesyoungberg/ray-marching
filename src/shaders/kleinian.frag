@@ -6,6 +6,7 @@ out vec4 fragColor;
 
 uniform int colorMode;
 uniform vec3 knLightColor;
+uniform vec3 knRotation;
 uniform vec3 paletteColor1;
 uniform vec3 paletteColor2;
 uniform vec3 paletteColor3;
@@ -36,7 +37,10 @@ float distFromNearest(in vec3 pos, inout vec3 mcol) {
     const vec3 cSize = vec3(0.63248, 0.78632, 0.875);
     float factor = 1.0;
 
+    mat4 rotationMatrix = createRotationMatrix(knRotation);
+
     for (int i = 0; i < 5; i++) {
+        p = rotateVec(p, rotationMatrix);
         p = 2.0 * clamp(p, -cSize, cSize) - p;
         float k = max(0.70968 / dot(p, p), 1.0);
         p *= k;
