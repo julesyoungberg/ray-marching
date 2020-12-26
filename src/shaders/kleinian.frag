@@ -31,19 +31,26 @@ uniform float time;
 @import ./util/rotate;
 
 // knighty's pseudo kleinian
-float distFromNearest(in vec3 pos, inout vec3 mcol) {
+float distFromNearest(in vec3 pos, inout vec3 mcol, out vec3 orbitTrap) {
     vec3 p = pos;
     const vec3 cSize = vec3(0.63248, 0.78632, 0.875);
     float factor = 1.0;
 
+    orbitTrap = vec3(1e20);
     mat4 rotationMatrix = createRotationMatrix(knRotation);
 
     for (int i = 0; i < 5; i++) {
         p = rotateVec(p, rotationMatrix);
+
         p = 2.0 * clamp(p, -cSize, cSize) - p;
+
         float k = max(0.70968 / dot(p, p), 1.0);
         p *= k;
         factor *= k;
+
+        orbitTrap.x = min(pow(abs(p.z), 0.1), orbitTrap.x);
+        orbitTrap.y = min(abs(p.x) - 0.15, orbitTrap.y);
+        orbitTrap.z = min(length(p), orbitTrap.z);
     }
 
     if (mcol.r >= 0.0) {
@@ -55,12 +62,21 @@ float distFromNearest(in vec3 pos, inout vec3 mcol) {
 }
 
 float distFromNearest(in vec3 pos) {
-    vec3 mcol = vec3(-1.0);
-    return distFromNearest(pos, mcol);
+    vec3 mcol;
+    vec3 orbitTrap;
+    return distFromNearest(pos, mcol, orbitTrap);
 }
 
-vec3 getShapeColor(in vec3 p) {
-    return shapeColor;
+vec3 getShapeColor(in vec3 p, in vec3 trap) {
+    vec3 color = shapeColor;
+
+    if (colorMode == 1) {
+        color = paletteColor1 * clamp(pow(trap.x, 20.0), 0.0, 1.0);
+        color += paletteColor2 * clamp(pow(trap.y, 20.0), 0.0, 1.0);
+        color += paletteColor3 * clamp(pow(trap.z, 20.0), 0.0, 1.0);
+    }
+
+    return color;
 }
 
 vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
@@ -77,7 +93,9 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     lightPos.z += pathSlider;
     ro.z -= pathSlider;
 
-    float dist = distFromNearest(ro) * 0.8;
+    vec3 orbitTrap;
+    vec3 mcol = vec3(-1);
+    float dist = distFromNearest(ro, mcol, orbitTrap) * 0.8;
 
     float totalDist = dist * rand();
     float nextDist = dist;
@@ -101,7 +119,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
             p = ro + rd * totalDist;
         }
 
-        dist = distFromNearest(p);
+        dist = distFromNearest(p, mcol, orbitTrap);
 
         if (nextDist > totalDist + fogDist) {
             // step through the fog and light it up
@@ -136,7 +154,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     }
 
     vec3 tcol = vec3(0.0);
-    vec3 mcol;
+    vec3 dummyOrbitTrap;
     
     // now pop each hit and compute the surface color with volumetric lighting
     for (int i = 0; i < 4; i++) {
@@ -151,7 +169,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         vec3 L = lightPos - p;
         vec3 scol;
 
-        mcol = sin(mcol) * 0.3 + getShapeColor(p);
+        mcol = sin(mcol) * 0.3 + getShapeColor(p, orbitTrap);
         float ls = exp(-dot(L, L) * 0.2);
 
         p += L * (-p.z) / L.z;
@@ -160,7 +178,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
 
         float v = max(0.0, dot(N, L));
         scol += exp(-totalDist) * mcol * v;
-        dist = smoothstep(0.0, 0.005, distFromNearest(p, mcol));
+        dist = smoothstep(0.0, 0.005, distFromNearest(p, mcol, dummyOrbitTrap));
         scol += ls * max(0.0, dot(N, L)) * dist * vec3(2, 2, 1.7);
 
         if (rd.z < 0.0 && dist > 0.0) {
@@ -205,5 +223,5 @@ void main() {
         finalColor = mix(finalColor, color, 1.0 / i);
     }
 
-    fragColor = finalColor;
+    fragColor = vec4(pow(finalColor.xyz, vec3(0.5)), finalColor.w);
 }
