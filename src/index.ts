@@ -53,6 +53,9 @@ const state = {
     currentProgram: 'kleinian',
     floor: true,
     fogDist: 50,
+    kleinian: {
+        lightColor: [255, 255, 178.5],
+    },
     mandelbox: {
         rotationX: 0,
         rotationY: 0,
@@ -114,6 +117,9 @@ color.addColor(state.colorPalette, 'paletteColor1');
 color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
 
+const kleinian = gui.addFolder('kleinian');
+kleinian.addColor(state.kleinian, 'lightColor');
+
 const moCtrl = gui.addFolder('mandelbox');
 moCtrl.add(state.mandelbox, 'rotationX', 0, 360);
 moCtrl.add(state.mandelbox, 'rotationY', 0, 360);
@@ -149,6 +155,7 @@ function render(time: number) {
         colorMode: state.colorMode === 'solid' ? 0 : 1,
         drawFloor: state.floor,
         fogDist: state.fogDist,
+        knLightColor: state.kleinian.lightColor.map(c => c / 255),
         moRotation: [
             state.mandelbox.rotationX,
             state.mandelbox.rotationY,

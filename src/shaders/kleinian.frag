@@ -4,8 +4,14 @@ precision highp float;
 in vec2 uv;
 out vec4 fragColor;
 
+uniform int colorMode;
+uniform vec3 knLightColor;
+uniform vec3 paletteColor1;
+uniform vec3 paletteColor2;
+uniform vec3 paletteColor3;
 uniform float quality;
 uniform vec2 resolution;
+uniform vec3 shapeColor;
 uniform bool spin;
 uniform float time;
 
@@ -50,6 +56,10 @@ float distFromNearest(in vec3 pos) {
     return distFromNearest(pos, mcol);
 }
 
+vec3 getShapeColor(in vec3 p) {
+    return shapeColor;
+}
+
 vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     randSeed(gl_FragCoord.xy + time * 0.012);
 
@@ -57,7 +67,6 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     float pxl = 1.0 / min(resolution.x, resolution.y);
     vec3 ro = rayOrigin;
     vec3 lightPos = vec3(0.5, 0.5, 0);
-    const vec3 lightColor = vec3(1, 1, 0.7);
     const float lightFactor = 40.0;
     vec3 p;
     vec3 rd = rayDir;
@@ -94,7 +103,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         if (nextDist > totalDist + fogDist) {
             // step through the fog and light it up
             float lightDist = 0.05 * length(ro + rd * (totalDist + fogDist) - lightPos);
-            color.rgb += color.a * lightColor * exp(-lightDist * lightFactor) * smoothstep(0.0, 0.01, dist);
+            color.rgb += color.a * knLightColor * exp(-lightDist * lightFactor) * smoothstep(0.0, 0.01, dist);
 
             if (totalDist + fogDist + lightDist > nextDist) {
                 fogDist = 0.0;
@@ -139,7 +148,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         vec3 L = lightPos - p;
         vec3 scol;
 
-        mcol = sin(mcol) * 0.3 + vec3(0.8, 0.6, 0.4);
+        mcol = sin(mcol) * 0.3 + getShapeColor(p);
         float ls = exp(-dot(L, L) * 0.2);
 
         p += L * (-p.z) / L.z;
@@ -149,10 +158,10 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         float v = max(0.0, dot(N, L));
         scol += exp(-totalDist) * mcol * v;
         dist = smoothstep(0.0, 0.005, distFromNearest(p, mcol));
-        scol += ls * vec3(2, 2, 1.7) * max(0.0, dot(N, L)) * dist;
+        scol += ls * max(0.0, dot(N, L)) * dist * vec3(2, 2, 1.7);
 
         if (rd.z < 0.0 && dist > 0.0) {
-            scol += ls * vec3(4, 3, 1.4) * pow(max(0.0, dot(reflect(rd, N), L)), 5.0) * (1.0 - 0.25 * v) * dist;
+            scol += ls * pow(max(0.0, dot(reflect(rd, N), L)), 5.0) * (1.0 - 0.25 * v) * dist * vec3(4, 3, 1.4);
         }
 
         tcol = mix(scol, tcol, alphaStack.x);
