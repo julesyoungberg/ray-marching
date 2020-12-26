@@ -30,6 +30,49 @@ uniform float time;
 @import ./util/randSeeded;
 @import ./util/rotate;
 
+vec3 fold(in vec3 pos) {
+    vec3 z = abs(pos);
+	if (z.x < z.y) {
+        z.xy = z.yx;
+    }
+	if (z.x < z.z) {
+        z.xz = z.zx;
+    }
+	if (z.y < z.z) {
+        z.yz = z.zy;
+    }
+    return z;
+}
+
+float menger(in vec3 pos, out vec3 orbitTrap) {
+    vec3 z = pos;
+    // float r;
+	
+	int n = 0;
+	z = fold(z);
+	if (z.z < 1.0 / 3.0) {
+        z.z -= 2.0 * (z.z - 1.0 / 3.0);
+    }
+
+    float scale = 3.0;
+    vec3 offset = vec3(.5);
+    while (n < 10 && dot(z, z) < 100.0) {
+        z = scale * (z - offset) + offset;
+
+        z = fold(z);
+		if (z.z < 1.0 / 3.0 * offset.z) {
+            z.z -= 2.0 * (z.z - 1.0 / 3.0 * offset.z);
+        }
+
+        // r = dot(z - offset, z - offset);
+        orbitTrap = min(orbitTrap, abs(vec3(z)));
+		
+		n++;
+    }
+
+    return float(z.x - offset) * pow(scale, float(-n));
+}
+
 // knighty's pseudo kleinian
 float distFromNearest(in vec3 pos, out vec3 orbitTrap) {
     vec3 p = pos;
@@ -53,8 +96,9 @@ float distFromNearest(in vec3 pos, out vec3 orbitTrap) {
         orbitTrap.z = min(length(p), orbitTrap.z);
     }
 
-    float rxy = length(p.xy);
-    return max(rxy - 0.92784, abs(rxy * p.z) / length(p)) / factor;
+    vec3 offset = vec3(0);
+    float offset2 = 0.0;
+    return abs(0.5 * menger(p - offset, orbitTrap) / factor - offset2);
 }
 
 float distFromNearest(in vec3 pos) {

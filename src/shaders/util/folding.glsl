@@ -15,13 +15,13 @@ vec3 foldTetrahedron(const vec3 pos) {
 
 vec3 foldTetrahedronFull(const vec3 pos) {
     vec3 p = foldTetrahedron(pos);
-    if (p.x - p.y < 0.0) {
+    if (p.x < p.y) {
         p.xy = p.yx;
     }
-    if (p.x - p.z < 0.0) {
+    if (p.x < p.z) {
         p.xz = p.zx;
     }
-    if (p.y - p.z < 0.0) {
+    if (p.y < p.z) {
         p.yz = p.zy;
     }
     return p;
@@ -31,13 +31,13 @@ vec3 foldCube(const vec3 pos) { return abs(pos); }
 
 vec3 foldOctahedral(const vec3 pos) {
     vec3 p = pos;
-    if (p.x - p.y < 0.0) {
+    if (p.x < p.y) {
         p.xy = p.yx;
     }
     if (p.x + p.y < 0.0) {
         p.xy = -p.yx;
     }
-    if (p.x - p.z < 0.0) {
+    if (p.x < p.z) {
         p.xz = p.zx;
     }
     if (p.x + p.z < 0.0) {
