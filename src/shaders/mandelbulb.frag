@@ -25,9 +25,9 @@ uniform float time;
 #define FRAME_OF_VIEW 1.0
 #define MAX_RAY_LENGTH 200.0
 #define MAX_TRACE_DISTANCE 200.0
-#define MIN_HIT_DISTANCE 0.0003
+#define MIN_HIT_DISTANCE 0.001
 #define NUM_STEPS 100
-#define RAY_PUSH 0.02
+#define RAY_PUSH 0.01
 
 // shading
 #define LIGHT_POS vec3(5.0, 10.0, 5.0)

@@ -23,7 +23,7 @@ uniform float time;
 #define FRAME_OF_VIEW 1.0
 #define MAX_RAY_LENGTH 50.0
 #define MAX_TRACE_DISTANCE 50.0
-#define MIN_HIT_DISTANCE 0.03
+#define MIN_HIT_DISTANCE 0.02
 #define NUM_STEPS 512
 #define RAY_PUSH 0.05
 
