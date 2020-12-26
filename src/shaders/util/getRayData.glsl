@@ -12,7 +12,7 @@ void getRayData(const vec2 uv, const vec3 camPos, const vec3 lookAt,
     // We want to move camera around center of the scene
     float cameraAngle = time * CAMERA_MOVEMENT_SPEED;
     mat4 rotateCameraMatrix =
-        createRotateAroundPointMatrix(vec3(0.0), vec3(0.0, cameraAngle, 0.0));
+        createRotateAroundPointMatrix(vec3(0.0), cameraAngle * worldUp);
     rayOrigin = (rotateCameraMatrix * vec4(rayOrigin, 1.0)).xyz;
 
     vec3 cameraForward = normalize(rayTargetPoint - rayOrigin);

@@ -13,7 +13,6 @@ uniform vec3 paletteColor3;
 uniform float quality;
 uniform vec2 resolution;
 uniform vec3 shapeColor;
-uniform bool spin;
 uniform float time;
 
 // ray marching
@@ -132,7 +131,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
             }
 
             prevDist = dist;
-            nextDist = totalDist + dist; // * (0.6 + 0.2 * rand());
+            nextDist = totalDist + dist * (0.6 + 0.2 * rand());
         }
     }
 
@@ -199,12 +198,8 @@ void main() {
         jitter.y += y / d;
 
         currentUV = getUV(gl_FragCoord.xy + jitter, resolution);
-        if (spin) {
-            getRayData(currentUV, camPos, camTarget, time, worldUp, rayOrigin, rayDir);
-        } else {
-            rayOrigin = camPos;
-            rayDir = lookAt(camTarget - camPos, worldUp) * normalize(vec3(currentUV, 1));
-        }
+        rayOrigin = camPos;
+        rayDir = lookAt(camTarget - camPos, worldUp) * normalize(vec3(currentUV, 1));
 
         color = scene(rayOrigin, rayDir);
         finalColor = mix(finalColor, color, 1.0 / i);
