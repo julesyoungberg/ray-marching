@@ -10,6 +10,7 @@ const basicVertShader = require('./shaders/basic.vert');
 const basicCubesShader = require('./shaders/basicCubes.frag');
 const mandelboxShader = require('./shaders/mandelbox.frag');
 const mandelbulbShader = require('./shaders/mandelbulb.frag');
+const kleinianShader = require('./shaders/kleinian.frag');
 const pseudoNoiseShader = require('./shaders/pseudoNoise.frag');
 const recursiveShapesShader = require('./shaders/recursiveShapes.frag');
 const reflectionShader = require('./shaders/reflection.frag');
@@ -24,6 +25,7 @@ const programs = {
     // optical: twgl.createProgramInfo(gl, [basicVertShader, opticalShader]),
     mandelbox: twgl.createProgramInfo(gl, [basicVertShader, mandelboxShader]),
     mandelbulb: twgl.createProgramInfo(gl, [basicVertShader, mandelbulbShader]),
+    kleinian: twgl.createProgramInfo(gl, [basicVertShader, kleinianShader]),
     pseudoNoise: twgl.createProgramInfo(gl, [basicVertShader, pseudoNoiseShader]),
     recursiveShapes: twgl.createProgramInfo(gl, [basicVertShader, recursiveShapesShader]),
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
@@ -48,7 +50,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'mandelbox',
+    currentProgram: 'kleinian',
     floor: true,
     fogDist: 50,
     mandelbox: {
@@ -80,7 +82,7 @@ const state = {
     shapeRotationX: 35.0,
     shapeRotationY: 0,
     shapeRotationZ: 315.0,
-    spin: true,
+    spin: false,
 };
 
 const urlHash = window.location.hash;
