@@ -80,7 +80,7 @@ float sdMandelbox(const vec3 pos, const int iterations, out vec3 orbitTrap) {
 
     for (int i = 0; i < iterations; i++) {
         z = rotateVec(z, rotationMatrix);
-        z = foldBox(z);
+        z = foldBox(z, 1.0);
         float r2 = dot(z, z);
 
         temp = foldSphere(vec4(z, dr), r2, radius);
