@@ -52,11 +52,20 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'kleinianMenger',
+    currentProgram: 'mandelbulb',
     floor: true,
     fogDist: 50,
     kleinian: {
+        deOffset: 0,
         lightColor: [255, 255, 178.5],
+        lightDiffuse: 80,
+        mengerOffsetX: 0.5,
+        mengerOffsetY: 0.5,
+        mengerOffsetZ: 0.5,
+        mengerScale: 3.0,
+        offsetX: 1,
+        offsetY: 0,
+        offsetZ: -1,
         rotationX: 0,
         rotationY: 0,
         rotationZ: 0,
@@ -75,7 +84,7 @@ const state = {
     },
     quality: 1,
     recursiveShapes: {
-        baseShape: 'kleinian',
+        baseShape: 'tetrahedron',
         centerScaleX: 1,
         centerScaleY: 1,
         centerScaleZ: 1,
@@ -123,7 +132,16 @@ color.addColor(state.colorPalette, 'paletteColor2');
 color.addColor(state.colorPalette, 'paletteColor3');
 
 const kleinian = gui.addFolder('kleinian');
+kleinian.add(state.kleinian, 'deOffset', -1, 1);
 kleinian.addColor(state.kleinian, 'lightColor');
+kleinian.add(state.kleinian, 'lightDiffuse', 20, 200);
+kleinian.add(state.kleinian, 'mengerOffsetX', -1, 1);
+kleinian.add(state.kleinian, 'mengerOffsetY', -1, 1);
+kleinian.add(state.kleinian, 'mengerOffsetZ', -1, 1);
+kleinian.add(state.kleinian, 'mengerScale', 2, 10);
+kleinian.add(state.kleinian, 'offsetX', -1, 1);
+kleinian.add(state.kleinian, 'offsetY', -1, 1);
+kleinian.add(state.kleinian, 'offsetZ', -1, 1);
 kleinian.add(state.kleinian, 'rotationX', 0, 360);
 kleinian.add(state.kleinian, 'rotationY', 0, 360);
 kleinian.add(state.kleinian, 'rotationZ', 0, 360);
@@ -163,7 +181,20 @@ function render(time: number) {
         colorMode: state.colorMode === 'solid' ? 0 : 1,
         drawFloor: state.floor,
         fogDist: state.fogDist,
+        knDeOffset: state.kleinian.deOffset,
         knLightColor: state.kleinian.lightColor.map(c => c / 255),
+        knLightDiffuse: state.kleinian.lightDiffuse,
+        knMengerOffset: [
+            state.kleinian.mengerOffsetX,
+            state.kleinian.mengerOffsetY,
+            state.kleinian.mengerOffsetZ,
+        ],
+        knMengerScale: state.kleinian.mengerScale,
+        knOffset: [
+            state.kleinian.offsetX,
+            state.kleinian.offsetY,
+            state.kleinian.offsetZ,
+        ],
         knRotation: [
             state.kleinian.rotationX,
             state.kleinian.rotationY,

@@ -5,7 +5,10 @@ in vec2 uv;
 out vec4 fragColor;
 
 uniform int colorMode;
+uniform float knDeOffset;
 uniform vec3 knLightColor;
+uniform float knLightDiffuse;
+uniform vec3 knOffset;
 uniform vec3 knRotation;
 uniform vec3 paletteColor1;
 uniform vec3 paletteColor2;
@@ -54,7 +57,8 @@ float distFromNearest(in vec3 pos, out vec3 orbitTrap) {
     }
 
     float rxy = length(p.xy);
-    return max(rxy - 0.92784, abs(rxy * p.z) / length(p)) / factor;
+    float offset = knOffset.z;
+    return abs(max(rxy - 0.92784, abs(rxy * (p.z - offset)) / length(p)) / factor - knDeOffset);
 }
 
 float distFromNearest(in vec3 pos) {
@@ -81,7 +85,6 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     float pxl = 1.0 / min(resolution.x, resolution.y);
     vec3 ro = rayOrigin;
     vec3 lightPos = vec3(0.5, 0.5, 0);
-    const float lightFactor = 40.0;
     vec3 p;
     vec3 rd = rayDir;
     
@@ -118,7 +121,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         if (nextDist > totalDist + fogDist) {
             // step through the fog and light it up
             float lightDist = 0.05 * length(ro + rd * (totalDist + fogDist) - lightPos);
-            color.rgb += color.a * knLightColor * exp(-lightDist * lightFactor) * smoothstep(0.0, 0.01, dist);
+            color.rgb += color.a * knLightColor * exp(-lightDist * knLightDiffuse) * smoothstep(0.0, 0.01, dist);
 
             if (totalDist + fogDist + lightDist > nextDist) {
                 fogDist = 0.0;

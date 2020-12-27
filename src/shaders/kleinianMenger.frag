@@ -5,7 +5,12 @@ in vec2 uv;
 out vec4 fragColor;
 
 uniform int colorMode;
+uniform float knDeOffset;
 uniform vec3 knLightColor;
+uniform float knLightDiffuse;
+uniform vec3 knMengerOffset;
+uniform float knMengerScale;
+uniform vec3 knOffset;
 uniform vec3 knRotation;
 uniform vec3 paletteColor1;
 uniform vec3 paletteColor2;
@@ -54,9 +59,13 @@ float menger(in vec3 pos, out vec3 orbitTrap) {
         z.z -= 2.0 * (z.z - 1.0 / 3.0);
     }
 
-    float scale = 3.0;
-    vec3 offset = vec3(.5);
-    while (n < 10 && dot(z, z) < 100.0) {
+    // mat4 rotationMatrix = createRotationMatrix(knRotation);
+
+    float scale = knMengerScale;
+    vec3 offset = knMengerOffset;
+    while (n < 5 && dot(z, z) < 100.0) {
+        // z = rotateVec(z, rotationMatrix);
+
         z = scale * (z - offset) + offset;
 
         z = fold(z);
@@ -65,7 +74,7 @@ float menger(in vec3 pos, out vec3 orbitTrap) {
         }
 
         // r = dot(z - offset, z - offset);
-        orbitTrap = min(orbitTrap, abs(vec3(z)));
+        // orbitTrap = min(orbitTrap, abs(vec3(z)));
 		
 		n++;
     }
@@ -96,9 +105,9 @@ float distFromNearest(in vec3 pos, out vec3 orbitTrap) {
         orbitTrap.z = min(length(p), orbitTrap.z);
     }
 
-    vec3 offset = vec3(0);
-    float offset2 = 0.0;
-    return abs(0.5 * menger(p - offset, orbitTrap) / factor - offset2);
+    vec3 offset = knOffset;
+    float deOffset = knDeOffset;
+    return abs(0.5 * menger(p - offset, orbitTrap) / factor - deOffset);
 }
 
 float distFromNearest(in vec3 pos) {
@@ -125,7 +134,6 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
     float pxl = 1.0 / min(resolution.x, resolution.y);
     vec3 ro = rayOrigin;
     vec3 lightPos = vec3(0.5, 0.5, 0);
-    const float lightFactor = 40.0;
     vec3 p;
     vec3 rd = rayDir;
     
@@ -162,7 +170,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
         if (nextDist > totalDist + fogDist) {
             // step through the fog and light it up
             float lightDist = 0.05 * length(ro + rd * (totalDist + fogDist) - lightPos);
-            color.rgb += color.a * knLightColor * exp(-lightDist * lightFactor) * smoothstep(0.0, 0.01, dist);
+            color.rgb += color.a * knLightColor * exp(-lightDist * knLightDiffuse) * smoothstep(0.0, 0.01, dist);
 
             if (totalDist + fogDist + lightDist > nextDist) {
                 fogDist = 0.0;
@@ -187,7 +195,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
             }
 
             prevDist = dist;
-            nextDist = totalDist + dist * (0.6 + 0.2 * rand());
+            nextDist = totalDist + dist;
         }
     }
 
@@ -234,7 +242,7 @@ vec4 scene(in vec3 rayOrigin, in vec3 rayDir) {
 }
 
 void main() {
-    const vec3 camPos = vec3(1.0, 0.0, 0.0);
+    const vec3 camPos = vec3(2.0, 0.0, 0.0);
     const vec3 camTarget = vec3(0);
     const vec3 worldUp = vec3(0, 0, 1);
     const float zoom = 1.0;
