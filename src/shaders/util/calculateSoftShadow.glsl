@@ -10,6 +10,8 @@ float calculateSoftShadow(vec3 position, vec3 lightPos, float k) {
     float stepDist = end / float(maxIterationsShad);
     rayDir /= end;
 
+    rayDir = normalize(rayDir);
+
     for (int i = 0; i < maxIterationsShad; i++) {
         float h = distFromNearest(position + rayDir * dist);
         shade = min(shade, smoothstep(0., 1., k * h / dist));
