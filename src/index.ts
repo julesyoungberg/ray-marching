@@ -88,6 +88,7 @@ const state = {
         centerScaleX: 1,
         centerScaleY: 1,
         centerScaleZ: 1,
+        renderTrap: true,
         rotation1X: 0,
         rotation1Y: 0,
         rotation1Z: 0,
@@ -99,7 +100,7 @@ const state = {
     shapeRotationX: 35.0,
     shapeRotationY: 0,
     shapeRotationZ: 315.0,
-    spin: false,
+    spin: true,
 };
 
 const urlHash = window.location.hash;
@@ -163,6 +164,7 @@ rsCtrl.add(state.recursiveShapes, 'baseShape', rsBaseShapes);
 rsCtrl.add(state.recursiveShapes, 'centerScaleX', 0.1, 1.0);
 rsCtrl.add(state.recursiveShapes, 'centerScaleY', 0.1, 1.0);
 rsCtrl.add(state.recursiveShapes, 'centerScaleZ', 0.1, 1.0);
+rsCtrl.add(state.recursiveShapes, 'renderTrap');
 rsCtrl.add(state.recursiveShapes, 'rotation1X', 0, 360);
 rsCtrl.add(state.recursiveShapes, 'rotation1Y', 0, 360);
 rsCtrl.add(state.recursiveShapes, 'rotation1Z', 0, 360);
@@ -225,6 +227,7 @@ function render(time: number) {
             state.recursiveShapes.centerScaleY,
             state.recursiveShapes.centerScaleZ,
         ],
+        rsRenderTrap: state.recursiveShapes.renderTrap,
         rsRotation1: [
             state.recursiveShapes.rotation1X,
             state.recursiveShapes.rotation1Y,

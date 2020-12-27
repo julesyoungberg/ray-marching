@@ -15,6 +15,7 @@ uniform float quality;
 uniform vec2 resolution;
 uniform int rsBaseShape;
 uniform vec3 rsCenterScale;
+uniform bool rsRenderTrap;
 uniform vec3 rsRotation1;
 uniform vec3 rsRotation2;
 uniform vec3 shapeColor;
