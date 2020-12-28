@@ -22,7 +22,7 @@ uniform bool vAnimateCells;
 #define RAY_PUSH 0.02
 
 // shading
-#define LIGHT_POS vec3(3.0, 5.0, 2.0)
+#define LIGHT_POS vec3(1.0, 10.0, 1.0)
 #define REFLECTIVITY 0.3
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
@@ -32,10 +32,8 @@ uniform bool vAnimateCells;
 #define MATERIAL_SPECULAR_STRENGTH 0.6
 
 // Scene
-#define FLOOR_FADE_START 25.
-#define FLOOR_FADE_END 50.
 #define FLOOR_LEVEL -1.5
-#define FLOOR_COLOR vec3(1.0, 1.0, 1.0)
+#define FLOOR_COLOR vec3(0.7)
 #define BACKGROUND vec3(1.0, 1.0, 1.0)
 
 #define EPSILON 1e-5
@@ -93,7 +91,7 @@ vec4 veroni(vec3 c) {
 }
 
 float distFromNearest(in vec3 pos) {
-    return sdBox(pos, CUBE_SIZE);
+    return sdBox(pos, CUBE_HALF);
 }
 
 vec3 getShapeColor(in vec3 ro, in vec3 rd) {
@@ -108,11 +106,27 @@ vec3 getShapeColor(in vec3 ro, in vec3 rd) {
     vec3 surfacePos = ro + rd * intersection.x;
     vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
 
+    float dist = distFromNearest(surfacePos);
+    if (dist < -0.9) {
+        return vec3(-1);
+    }
+
     // map cube to (0, 0, 0)-(1, 1, 1)
     vec4 cell = veroni((surfacePos + CUBE_HALF) / CUBE_SIZE);
 
     vec3 color = cell.xyz;
     return calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, color);
+}
+
+vec3 calculateReflection(in vec3 position, in vec3 normal, in vec3 color, in vec3 eyePos) {
+    vec3 rayDir = normalize(position - eyePos);
+    vec3 reflectDir = reflect(rayDir, normal);
+    vec3 reflected = getShapeColor(position, reflectDir);
+    if (all(lessThan(reflected, vec3(0)))) {
+        return color;
+    }
+
+    return mix(color, reflected, REFLECTIVITY);
 }
 
 vec3 getFloorColor(vec3 ro, vec3 rd) {
@@ -125,11 +139,13 @@ vec3 getFloorColor(vec3 ro, vec3 rd) {
     vec3 surfacePos = ro + rd * dist;
     vec3 surfaceNorm = vec3(0, 1, 0);
     vec3 color = calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, FLOOR_COLOR);
+    color *= calculateShadow(surfacePos, surfaceNorm, LIGHT_POS);
+    color = calculateReflection(surfacePos, surfaceNorm, color, ro);
     return color;
 }
 
 void main() {
-    const vec3 camPos = vec3(6.0);
+    const vec3 camPos = vec3(7.0, 4.0, 7.0);
     const vec3 camTarget = vec3(CUBE_SIZE / 2.0);
     const vec3 worldUp = vec3(0, 0, 1);
     const float zoom = 1.0;
