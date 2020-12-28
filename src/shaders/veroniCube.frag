@@ -47,6 +47,7 @@ const vec3 CUBE_HALF = CUBE_SIZE / 2.0;
 @import ./primitives/sdBox;
 @import ./util/calculateFloorDist;
 @import ./util/calculatePhong;
+@import ./util/calculateShadow;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
@@ -91,39 +92,40 @@ vec4 veroni(vec3 c) {
     return vec4(minPoint, minDist);
 }
 
-vec3 scene(in vec3 ro, in vec3 rd) {
+float distFromNearest(in vec3 pos) {
+    return sdBox(pos, CUBE_SIZE);
+}
+
+vec3 getShapeColor(in vec3 ro, in vec3 rd) {
     float pxl = 1.0 / min(resolution.x, resolution.y);
-    vec3 color = vec3(0);
     
     vec2 intersection = cubeIntersect(ro, rd, -CUBE_HALF, CUBE_HALF);
-    vec3 surfacePos;
-    vec3 surfaceNorm;
-
-    if (intersection.x <= intersection.y) {
-        // we have an intersection
-        surfacePos = ro + rd * intersection.x;
-        surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
-
-        // map cube to (0, 0, 0)-(1, 1, 1)
-        vec3 coord = (surfacePos + CUBE_HALF) / CUBE_SIZE;
-        vec4 cell = veroni(coord);
-
-        color = cell.xyz;
-    } else {
-        // this ray doesn't intersect the cube
-        // must be the floor or background
-        float dist = calculateFloorDist(ro, rd, FLOOR_LEVEL);
-        if (dist < 0.0) {
-            // should never really happen
-            return BACKGROUND;
-        }
-
-        surfacePos = ro + rd * dist;
-        surfaceNorm = vec3(0, 1, 0);
-        color = FLOOR_COLOR;
+    if (intersection.x > intersection.y) {
+        return vec3(-1);
     }
 
+    // we have an intersection
+    vec3 surfacePos = ro + rd * intersection.x;
+    vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
+
+    // map cube to (0, 0, 0)-(1, 1, 1)
+    vec4 cell = veroni((surfacePos + CUBE_HALF) / CUBE_SIZE);
+
+    vec3 color = cell.xyz;
     return calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, color);
+}
+
+vec3 getFloorColor(vec3 ro, vec3 rd) {
+    float dist = calculateFloorDist(ro, rd, FLOOR_LEVEL);
+    if (dist < 0.0) {
+        // should never really happen
+        return BACKGROUND;
+    }
+
+    vec3 surfacePos = ro + rd * dist;
+    vec3 surfaceNorm = vec3(0, 1, 0);
+    vec3 color = calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, FLOOR_COLOR);
+    return color;
 }
 
 void main() {
@@ -153,7 +155,12 @@ void main() {
             getRayData(currentUV, camPos, camTarget, 0.0, rayOrigin, rayDir);
         }
 
-        color = scene(rayOrigin, rayDir);
+        color = getShapeColor(rayOrigin, rayDir);
+        if (all(lessThan(color, vec3(0)))) {
+            // no hit - must be the floor
+            color = getFloorColor(rayOrigin, rayDir);
+        }
+
         finalColor = mix(finalColor, color, 1.0 / i);
     }
 
