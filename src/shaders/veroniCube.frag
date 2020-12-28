@@ -45,6 +45,7 @@ const vec3 CUBE_HALF = CUBE_SIZE / 2.0;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
+@import ./util/rand;
 @import ./util/rotate;
 
 vec4 scene(in vec3 ro, in vec3 rd) {
@@ -58,11 +59,45 @@ vec4 scene(in vec3 ro, in vec3 rd) {
         // we have an intersection
         vec3 surfacePos = ro + rd * intersection.x;
         vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
-        color.xyz = abs(surfaceNorm);
+
+        // map cube to (0, 0, 0)-(1, 1, 1)
+        vec3 coord = (surfacePos + CUBE_HALF) / CUBE_SIZE;
+        // Tile the space
+        const float gridRes = 5.0;
+        coord *= gridRes;
+
+        vec3 binCoord = floor(coord);
+        vec3 binPos = fract(coord);
+
+        float minDist = gridRes;
+        vec3 minPoint;
+
+        // search neighborhood
+        for (int x = -1; x <= 1; x++) {
+            for (int y = -1; y <= 1; y++) {
+                for (int z = -1; z <= 1; z++) {
+                    vec3 neighbor = vec3(x, y, z);
+                    vec3 point = rand3(binCoord + neighbor);
+
+                    // TODO: animate point
+                    // point = 0.5 + 0.5 * sin(u_time + 6.2831 * point);
+
+                    vec3 diff = neighbor + point - binPos;
+                    float dist = length(diff);
+
+                    if (dist < minDist) {
+                        minDist = dist;
+                        minPoint = point;
+                    }
+                }
+            }
+        }
+
+        color.rgb = minPoint;
     } else {
         // this ray doesn't intersect the cube
         // must be the floor or background
-        color.xyz = vec3(1);
+        color.rgb = vec3(1);
     }
 
     return color;
