@@ -103,6 +103,9 @@ const state = {
     shapeRotationY: 0,
     shapeRotationZ: 315.0,
     spin: true,
+    veroni: {
+        animateCells: true,
+    },
 };
 
 const urlHash = window.location.hash;
@@ -174,6 +177,9 @@ rsCtrl.add(state.recursiveShapes, 'rotation2X', 0, 360);
 rsCtrl.add(state.recursiveShapes, 'rotation2Y', 0, 360);
 rsCtrl.add(state.recursiveShapes, 'rotation2Z', 0, 360);
 
+const vCtrl = gui.addFolder('veroni');
+vCtrl.add(state.veroni, 'animateCells');
+
 const pointers = new Pointers(gl.canvas as HTMLCanvasElement);
 
 function render(time: number) {
@@ -244,6 +250,7 @@ function render(time: number) {
         shapeRotation: [state.shapeRotationX, state.shapeRotationY, state.shapeRotationZ],
         spin: state.spin,
         time: time * 0.001,
+        vAnimateCells: state.veroni.animateCells,
     };
 
     const programInfo = programs[state.currentProgram];

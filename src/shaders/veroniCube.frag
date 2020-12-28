@@ -12,6 +12,7 @@ uniform vec2 resolution;
 uniform vec3 shapeRotation;
 uniform bool spin;
 uniform float time;
+uniform bool vAnimateCells;
 
 // ray marching
 #define FRAME_OF_VIEW 1.0
@@ -72,8 +73,9 @@ vec4 veroni(vec3 c) {
                 vec3 neighbor = vec3(x, y, z);
                 vec3 point = rand3(binCoord + neighbor);
 
-                // TODO: animate point
-                // point = 0.5 + 0.5 * sin(u_time + 6.2831 * point);
+                if (vAnimateCells) {
+                    point = 0.5 + 0.5 * sin(time + 6.2831 * point);
+                }
 
                 vec3 diff = neighbor + point - binPos;
                 float dist = length(diff);
