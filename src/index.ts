@@ -18,6 +18,7 @@ const reflectionShader = require('./shaders/reflection.frag');
 const reflections1Shader = require('./shaders/reflections1.frag');
 const reflections2Shader = require('./shaders/reflections2.frag');
 const spotlightShader = require('./shaders/spotlight.frag');
+const veroniCubeShader = require('./shaders/veroniCube.frag');
 
 const gl: WebGLRenderingContext = createContext();
 const bufferInfo = createUnitQuad2D(gl);
@@ -34,6 +35,7 @@ const programs = {
     reflections1: twgl.createProgramInfo(gl, [basicVertShader, reflections1Shader]),
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
+    veroni: twgl.createProgramInfo(gl, [basicVertShader, veroniCubeShader]),
 };
 
 const rsBaseShapes = [
@@ -52,7 +54,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'mandelbulb',
+    currentProgram: 'veroni',
     floor: true,
     fogDist: 50,
     kleinian: {

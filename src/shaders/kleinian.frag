@@ -25,7 +25,6 @@ uniform float time;
 #define NUM_STEPS 99
 
 @import ./util/calculateNormal;
-@import ./util/castRay;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
