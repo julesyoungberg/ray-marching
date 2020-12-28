@@ -21,19 +21,21 @@ uniform float time;
 #define RAY_PUSH 0.02
 
 // shading
-#define LIGHT_POS vec3(2.0, 10.0, 8.0)
+#define LIGHT_POS vec3(3.0, 5.0, 2.0)
 #define REFLECTIVITY 0.3
 #define SHADOW_INTENSITY 0.9
 #define SHADOW_FACTOR 128.0
 #define MATERIAL_SHININESS 4.
-#define MATERIAL_AMBIENT_STRENGTH 0.04
+#define MATERIAL_AMBIENT_STRENGTH 0.1
 #define MATERIAL_DIFFUSE_STRENGTH 0.8
 #define MATERIAL_SPECULAR_STRENGTH 0.6
 
 // Scene
 #define FLOOR_FADE_START 25.
 #define FLOOR_FADE_END 50.
-#define FLOOR_LEVEL -2.0
+#define FLOOR_LEVEL -1.5
+#define FLOOR_COLOR vec3(1.0, 1.0, 1.0)
+#define BACKGROUND vec3(1.0, 1.0, 1.0)
 
 #define EPSILON 1e-5
 
@@ -42,65 +44,84 @@ const vec3 CUBE_HALF = CUBE_SIZE / 2.0;
 
 @import ./primitives/cube;
 @import ./primitives/sdBox;
+@import ./util/calculateFloorDist;
+@import ./util/calculatePhong;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
 @import ./util/rand;
 @import ./util/rotate;
 
-vec4 scene(in vec3 ro, in vec3 rd) {
-    float pxl = 1.0 / min(resolution.x, resolution.y);
-    const vec3 lightPos = vec3(0, 3.0, 0);
-    vec4 color = vec4(0, 0, 0, 1);
-    
-    vec2 intersection = cubeIntersect(ro, rd, -CUBE_HALF, CUBE_HALF);
+vec4 veroni(vec3 c) {
+    vec3 coord = c;
 
-    if (intersection.x <= intersection.y) {
-        // we have an intersection
-        vec3 surfacePos = ro + rd * intersection.x;
-        vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
+    // Tile the space
+    const float gridRes = 5.0;
+    coord *= gridRes;
 
-        // map cube to (0, 0, 0)-(1, 1, 1)
-        vec3 coord = (surfacePos + CUBE_HALF) / CUBE_SIZE;
-        // Tile the space
-        const float gridRes = 5.0;
-        coord *= gridRes;
+    vec3 binCoord = floor(coord);
+    vec3 binPos = fract(coord);
 
-        vec3 binCoord = floor(coord);
-        vec3 binPos = fract(coord);
+    float minDist = gridRes;
+    vec3 minPoint;
 
-        float minDist = gridRes;
-        vec3 minPoint;
+    // search neighborhood
+    for (int x = -1; x <= 1; x++) {
+        for (int y = -1; y <= 1; y++) {
+            for (int z = -1; z <= 1; z++) {
+                vec3 neighbor = vec3(x, y, z);
+                vec3 point = rand3(binCoord + neighbor);
 
-        // search neighborhood
-        for (int x = -1; x <= 1; x++) {
-            for (int y = -1; y <= 1; y++) {
-                for (int z = -1; z <= 1; z++) {
-                    vec3 neighbor = vec3(x, y, z);
-                    vec3 point = rand3(binCoord + neighbor);
+                // TODO: animate point
+                // point = 0.5 + 0.5 * sin(u_time + 6.2831 * point);
 
-                    // TODO: animate point
-                    // point = 0.5 + 0.5 * sin(u_time + 6.2831 * point);
+                vec3 diff = neighbor + point - binPos;
+                float dist = length(diff);
 
-                    vec3 diff = neighbor + point - binPos;
-                    float dist = length(diff);
-
-                    if (dist < minDist) {
-                        minDist = dist;
-                        minPoint = point;
-                    }
+                if (dist < minDist) {
+                    minDist = dist;
+                    minPoint = point;
                 }
             }
         }
+    }
 
-        color.rgb = minPoint;
+    return vec4(minPoint, minDist);
+}
+
+vec3 scene(in vec3 ro, in vec3 rd) {
+    float pxl = 1.0 / min(resolution.x, resolution.y);
+    vec3 color = vec3(0);
+    
+    vec2 intersection = cubeIntersect(ro, rd, -CUBE_HALF, CUBE_HALF);
+    vec3 surfacePos;
+    vec3 surfaceNorm;
+
+    if (intersection.x <= intersection.y) {
+        // we have an intersection
+        surfacePos = ro + rd * intersection.x;
+        surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
+
+        // map cube to (0, 0, 0)-(1, 1, 1)
+        vec3 coord = (surfacePos + CUBE_HALF) / CUBE_SIZE;
+        vec4 cell = veroni(coord);
+
+        color = cell.xyz;
     } else {
         // this ray doesn't intersect the cube
         // must be the floor or background
-        color.rgb = vec3(1);
+        float dist = calculateFloorDist(ro, rd, FLOOR_LEVEL);
+        if (dist < 0.0) {
+            // should never really happen
+            return BACKGROUND;
+        }
+
+        surfacePos = ro + rd * dist;
+        surfaceNorm = vec3(0, 1, 0);
+        color = FLOOR_COLOR;
     }
 
-    return color;
+    return calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, color);
 }
 
 void main() {
@@ -109,8 +130,8 @@ void main() {
     const vec3 worldUp = vec3(0, 0, 1);
     const float zoom = 1.0;
 
-    vec4 color = vec4(0, 0, 0, 1);
-    vec4 finalColor = vec4(0, 0, 0, 1);
+    vec3 color = vec3(0);
+    vec3 finalColor = vec3(0);
     vec2 currentUV = uv;
     vec3 rayOrigin, rayDir;
     float d = quality;
@@ -134,5 +155,5 @@ void main() {
         finalColor = mix(finalColor, color, 1.0 / i);
     }
 
-    fragColor = vec4(pow(finalColor.xyz, vec3(0.5)), finalColor.w);
+    fragColor = vec4(pow(finalColor, vec3(0.5)), 1);
 }
