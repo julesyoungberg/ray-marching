@@ -38,8 +38,10 @@ uniform float time;
 #define EPSILON 1e-5
 
 const vec3 CUBE_SIZE = vec3(2);
+const vec3 CUBE_HALF = CUBE_SIZE / 2.0;
 
-@import ./util/cube;
+@import ./primitives/cube;
+@import ./primitives/sdBox;
 @import ./util/getRayData;
 @import ./util/getUV;
 @import ./util/hash;
@@ -50,13 +52,13 @@ vec4 scene(in vec3 ro, in vec3 rd) {
     const vec3 lightPos = vec3(0, 3.0, 0);
     vec4 color = vec4(0, 0, 0, 1);
     
-    vec2 intersection = cubeIntersect(ro, rd, vec3(0), CUBE_SIZE);
+    vec2 intersection = cubeIntersect(ro, rd, -CUBE_HALF, CUBE_HALF);
 
     if (intersection.x <= intersection.y) {
         // we have an intersection
         vec3 surfacePos = ro + rd * intersection.x;
-        vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE / 2.0);
-        color.xyz = surfaceNorm;
+        vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
+        color.xyz = abs(surfaceNorm);
     } else {
         // this ray doesn't intersect the cube
         // must be the floor or background
@@ -67,7 +69,7 @@ vec4 scene(in vec3 ro, in vec3 rd) {
 }
 
 void main() {
-    const vec3 camPos = vec3(5.0);
+    const vec3 camPos = vec3(6.0);
     const vec3 camTarget = vec3(CUBE_SIZE / 2.0);
     const vec3 worldUp = vec3(0, 0, 1);
     const float zoom = 1.0;
@@ -88,7 +90,7 @@ void main() {
 
         currentUV = getUV(gl_FragCoord.xy + jitter, resolution);
         if (spin) {
-            getRayData(currentUV, camPos, camTarget, 0.0, rayOrigin, rayDir);
+            getRayData(currentUV, camPos, camTarget, time, rayOrigin, rayDir);
         } else {
             getRayData(currentUV, camPos, camTarget, 0.0, rayOrigin, rayDir);
         }

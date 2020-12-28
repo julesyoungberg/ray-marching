@@ -11,20 +11,17 @@ vec2 cubeIntersect(vec3 rayOrigin, vec3 rayDir, vec3 boxMin, vec3 boxMax) {
     return vec2(tNear, tFar);
 }
 
-const vec3 CUBE_NORMALS_[3] =
-    vec3[3](vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1));
+float sdBox(in vec3 p, in vec3 b);
 
-vec3 cubeNormal(vec3 point, vec3 center) {
-    vec3 interRelative = point - center;
-    float xyCoef = interRelative.y / interRelative.x;
-    float zyCoef = interRelative.y / interRelative.z;
+vec3 cubeNormal(vec3 pos, vec3 boxSize) {
+    vec3 boxCenter = boxSize / 2.0;
+    vec3 p = pos;
 
-    int coef = 0;
-    if (-1.0 <= xyCoef && xyCoef <= 1.0) {
-        coef = 1;
-    } else if (-1.0 < zyCoef && zyCoef < 1.0) {
-        coef = 2;
-    }
+    const vec3 stp = vec3(1e-5, 0, 0);
 
-    return CUBE_NORMALS_[coef] * sign(interRelative);
+    float x = sdBox(p + stp.xyy, boxSize) - sdBox(p - stp.xyy, boxSize);
+    float y = sdBox(p + stp.yxy, boxSize) - sdBox(p - stp.yxy, boxSize);
+    float z = sdBox(p + stp.yyx, boxSize) - sdBox(p - stp.yyx, boxSize);
+
+    return normalize(vec3(x, y, z));
 }
