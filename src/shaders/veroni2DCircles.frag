@@ -6,17 +6,15 @@ out vec4 fragColor;
 
 uniform vec2 resolution;
 uniform float time;
+uniform bool vAnimateCells;
 
 @import ./util/rand;
 
-struct Plane {
-    vec2 point;
-    vec2 normal;
-};
-
 vec2 getPoint(vec2 c) {
     vec2 point = rand2(c);
-    point = 0.5 + 0.5 * sin(time + 6.2831 * point);
+    if (vAnimateCells) {
+        point = 0.5 + 0.5 * sin(time + 6.2831 * point);
+    }
     return point;
 }
 
@@ -28,7 +26,7 @@ void main() {
     vec2 i_st = floor(st);
     vec2 f_st = fract(st);
 
-    float pointDist = 0.0;
+    float pointDist = 10.0;
     vec2 nearestPoint;
 
     // find the nearest point
@@ -37,10 +35,8 @@ void main() {
             vec2 neighbor = vec2(x, y);
             vec2 q = neighbor + getPoint(i_st + neighbor);
 
-            vec2 diff = q - f_st;
-            float dist = 1.0 - length(diff);
-
-            if (dist > pointDist) {
+            float dist = length(q - f_st);
+            if (dist < pointDist) {
                 pointDist = dist;
                 nearestPoint = q;
             }
@@ -68,16 +64,18 @@ void main() {
             vec2 point = (centerPoint + q) / 2.0;
             vec2 normal = normalize(centerPoint - q);
             
-            vec2 diff = f_st - point;
+            vec2 diff = centerPoint - point;
             float dist = length(dot(diff, normal));
             planeDist = min(planeDist, dist);
         }
     }
 
-    vec3 color;
-    // color += sqrt(pointDist);
-    color += sqrt(planeDist);
-    color.rg = nearestPoint - relativeBin;
+    float radius = planeDist * 2.0;
+
+    vec3 color = vec3(0);
+    color += pointDist;
+    color.rg = fract(nearestPoint);
+    color *= 1.0 - step(radius / 2.0, pointDist);
 
     fragColor = vec4(color, 1);
 }
