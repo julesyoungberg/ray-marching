@@ -201,7 +201,7 @@ vec3 getFloorColor(vec3 ro, vec3 rd) {
 }
 
 void main() {
-    const vec3 camPos = vec3(7.0, 4.0, 7.0);
+    const vec3 camPos = vec3(6.0, 3.0, 6.0);
     const vec3 camTarget = vec3(CUBE_SIZE / 2.0);
     const vec3 worldUp = vec3(0, 0, 1);
     const float zoom = 1.0;

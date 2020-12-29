@@ -56,7 +56,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'veroniMetaballs',
+    currentProgram: 'veroniCube',
     floor: true,
     fogDist: 50,
     kleinian: {
@@ -106,7 +106,7 @@ const state = {
     shapeRotationZ: 315.0,
     spin: true,
     veroni: {
-        animateCells: true,
+        animateCells: false, // true,
     },
 };
 
