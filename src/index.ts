@@ -19,6 +19,7 @@ const reflections1Shader = require('./shaders/reflections1.frag');
 const reflections2Shader = require('./shaders/reflections2.frag');
 const spotlightShader = require('./shaders/spotlight.frag');
 const veroni2DShader = require('./shaders/veroni2D.frag');
+const veroniCirclesShader = require('./shaders/veroni2DCircles.frag');
 const veroniCubeShader = require('./shaders/veroniCube.frag');
 const veroniHollowShader = require('./shaders/veroniCubeHollow.frag');
 const veroniMetaballsShader = require('./shaders/veroniMetaballs.frag');
@@ -39,6 +40,7 @@ const programs = {
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
     veroni2D: twgl.createProgramInfo(gl, [basicVertShader, veroni2DShader]),
+    veroni2DCircles: twgl.createProgramInfo(gl, [basicVertShader, veroniCirclesShader]),
     veroniCube: twgl.createProgramInfo(gl, [basicVertShader, veroniCubeShader]),
     veroniCubeHollow: twgl.createProgramInfo(gl, [basicVertShader, veroniHollowShader]),
     veroniMetaballs: twgl.createProgramInfo(gl, [basicVertShader, veroniMetaballsShader]),
@@ -60,7 +62,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'veroni2D',
+    currentProgram: 'veroni2DCircles',
     floor: true,
     fogDist: 50,
     kleinian: {
@@ -110,7 +112,7 @@ const state = {
     shapeRotationZ: 315.0,
     spin: true,
     veroni: {
-        animateCells: false, // true,
+        animateCells: true,
     },
 };
 

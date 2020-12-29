@@ -53,7 +53,7 @@ uniform bool vAnimateCells;
 @import ./util/rand;
 @import ./util/rotate;
 
-const float gridRes = 2.0;
+const float gridRes = 8.0;
 
 vec4 veroni(vec3 p) {
     // map cube to (0, 0, 0)-(1, 1, 1)
