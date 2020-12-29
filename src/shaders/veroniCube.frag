@@ -154,11 +154,6 @@ vec3 getShapeColor(in vec3 ro, in vec3 rd) {
     vec3 surfacePos = ro + rd * intersection.x;
     vec3 surfaceNorm = cubeNormal(surfacePos, CUBE_SIZE);
 
-    float dist = distFromNearest(surfacePos);
-    if (dist < -0.1) {
-        return vec3(-1);
-    }
-
     vec4 cell = veroni(surfacePos);
     vec3 color = cell.xyz;
     color = calculatePhong(surfacePos, surfaceNorm, ro, LIGHT_POS, color);
