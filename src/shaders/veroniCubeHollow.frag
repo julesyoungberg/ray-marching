@@ -67,8 +67,9 @@ vec4 veroni(vec3 p) {
     vec3 binCoord = floor(coord);
     vec3 binPos = fract(coord);
 
-    float minDist = 1.0;
+    float minDist = 0.0;
     vec3 minPoint;
+    float binSize = 1.5 / gridRes;
 
     // search neighborhood
     for (int x = -1; x <= 1; x++) {
@@ -82,9 +83,10 @@ vec4 veroni(vec3 p) {
                 }
 
                 vec3 diff = neighbor + point - binPos;
-                float dist = length(diff) * minDist; // * 0.9;
+                float dist = length(diff);
+                dist = binSize - dist;
 
-                if (dist < minDist) {
+                if (dist > minDist) {
                     minDist = dist;
                     minPoint = point;
                 }
@@ -116,7 +118,7 @@ vec3 getShapeColor(in vec3 ro, in vec3 rd) {
         currentPos = ro + rd * totalDist;
         currentDist = distFromNearest(currentPos);
 
-        if (currentDist < MIN_HIT_DISTANCE) {
+        if (currentDist < 0.1) {
             break;
         }
 
