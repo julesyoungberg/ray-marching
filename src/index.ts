@@ -38,7 +38,7 @@ const programs = {
     reflection: twgl.createProgramInfo(gl, [basicVertShader, reflectionShader]),
     reflections1: twgl.createProgramInfo(gl, [basicVertShader, reflections1Shader]),
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
-    spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
+    // spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
     veroni2D: twgl.createProgramInfo(gl, [basicVertShader, veroni2DShader]),
     // veroni2DCircles: twgl.createProgramInfo(gl, [basicVertShader, veroniCirclesShader]),
     veroniCube: twgl.createProgramInfo(gl, [basicVertShader, veroniCubeShader]),
@@ -62,7 +62,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'veroniCubeHollow',
+    currentProgram: 'mandelbulb',
     floor: true,
     fogDist: 50,
     kleinian: {
