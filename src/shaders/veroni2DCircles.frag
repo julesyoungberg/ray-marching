@@ -34,7 +34,6 @@ void main() {
         for (int x = -1; x <= 1; x++) {
             vec2 neighbor = vec2(x, y);
             vec2 q = neighbor + getPoint(i_st + neighbor);
-
             float dist = length(q - f_st);
             if (dist < pointDist) {
                 pointDist = dist;

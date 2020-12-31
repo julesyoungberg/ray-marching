@@ -40,10 +40,10 @@ const programs = {
     reflections2: twgl.createProgramInfo(gl, [basicVertShader, reflections2Shader]),
     spotlight: twgl.createProgramInfo(gl, [basicVertShader, spotlightShader]),
     veroni2D: twgl.createProgramInfo(gl, [basicVertShader, veroni2DShader]),
-    veroni2DCircles: twgl.createProgramInfo(gl, [basicVertShader, veroniCirclesShader]),
+    // veroni2DCircles: twgl.createProgramInfo(gl, [basicVertShader, veroniCirclesShader]),
     veroniCube: twgl.createProgramInfo(gl, [basicVertShader, veroniCubeShader]),
-    veroniCubeHollow: twgl.createProgramInfo(gl, [basicVertShader, veroniHollowShader]),
-    veroniMetaballs: twgl.createProgramInfo(gl, [basicVertShader, veroniMetaballsShader]),
+    // veroniCubeHollow: twgl.createProgramInfo(gl, [basicVertShader, veroniHollowShader]),
+    // veroniMetaballs: twgl.createProgramInfo(gl, [basicVertShader, veroniMetaballsShader]),
 };
 
 const rsBaseShapes = [
@@ -62,7 +62,7 @@ const state = {
         paletteColor2: [0, 58, 107],
         paletteColor3: [0, 197, 255],
     },
-    currentProgram: 'veroni2DCircles',
+    currentProgram: 'veroniCubeHollow',
     floor: true,
     fogDist: 50,
     kleinian: {
